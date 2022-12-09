@@ -1,0 +1,45 @@
+---
+name: CodeQL
+on:  # yamllint disable-line rule:truthy
+  push:
+    branches: ["main"]
+  pull_request:
+    branches: ["main"]
+  schedule:
+{{ github_actions.codeql.schedule | to_nice_yaml(indent=2) | indent(width=4, first=true) -}}
+jobs:
+  analyze:
+    name: Analyze
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    strategy:
+      fail-fast: false
+      matrix:
+        language: [python]
+    steps:
+      - name: Update pip, git
+        run: |
+          set -euxo pipefail
+          sudo apt-get update
+          sudo apt-get install -y git
+      - name: Checkout
+        uses: {{ gha_checkout_action }}
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v2
+        with:
+{%- raw %}
+          languages: ${{ matrix.language }}
+          queries: +security-and-quality
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v2
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v2
+        with:
+          category: "/language:${{ matrix.language }}"
+{%- endraw +%}

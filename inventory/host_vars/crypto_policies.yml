@@ -1,0 +1,4 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 4 * * 6"

@@ -1,0 +1,10 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 19 * * 6"
+yamllint:
+  ignore: |
+    tests/roles/candlepin/
+ansible_lint:
+  exclude_paths:
+    - tests/roles/candlepin/

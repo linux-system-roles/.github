@@ -1,0 +1,7 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 11 * * 6"
+  codeql:
+    schedule:
+      - cron: "24 13 * * 2"

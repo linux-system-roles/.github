@@ -1,0 +1,11 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 20 * * 6"
+  codeql:
+    schedule:
+      - cron: "37 4 * * 4"
+ansible_lint:
+  mock_modules:
+    - sefcontext
+    - selogin

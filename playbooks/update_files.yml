@@ -1,0 +1,171 @@
+- name: Manage files in system roles repos
+  hosts: active_roles
+  connection: local
+  gather_facts: false
+  vars:
+    update_files_branch: update_role_files
+  tasks:
+    - name: Ensure gh files are present
+      stat:
+        name: "{{ item }}"
+      register: stat
+      failed_when: not stat.stat.exists
+      run_once: true
+      loop:
+        - /usr/bin/gh
+        - "{{ lookup('env', 'HOME') ~ '/.config/gh/hosts.yml' }}"
+
+    - name: Ensure git commit file is present
+      assert:
+        msg: >-
+          You must provide the variable update_files_commit_file which contains
+          the path and filename of the file containing the contents of the git
+          commit message (and will also be used for the PR title and body)
+        that:
+          - update_files_commit_file is defined
+          - update_files_commit_file is exists
+      run_once: true
+
+    - name: Update files and create a PR
+      block:
+        - name: Create temp working dir
+          tempfile:
+            state: directory
+            prefix: lsr_{{ inventory_hostname }}_
+            suffix: _pr
+          register: __working_dir
+          when: test_dir is not defined
+
+        - name: Set some vars
+          set_fact:
+            git_dir: "{{ (test_dir | d(__working_dir.path)) ~ '/' ~ inventory_hostname }}"
+
+        - name: Clone repo
+          git:
+            # noqa latest
+            repo: "{{ github_url_prefix ~ github_org ~ '/' ~ inventory_hostname }}"
+            dest: "{{ git_dir }}"
+          when: git_dir is not exists
+
+        - name: Set main branch var
+          set_fact:
+            __main_br: main
+
+        - name: Checkout working branch, rebase on top of latest, see if new or not
+          changed_when: false
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euo pipefail
+              cur_br=$(git branch --show-current)
+              if [ "$cur_br" = {{ update_files_branch | quote }} ]; then
+                # assume this is in active development
+                exit 10
+              elif git checkout {{ update_files_branch | quote }} > /dev/null 2>&1; then
+                git rebase "{{ __main_br }}"
+                exit 10
+              else
+                git checkout -b {{ update_files_branch | quote }}
+                exit 20
+              fi
+          register: __checkout
+          failed_when: __checkout.rc not in [10, 20]
+
+        - name: Set vars for next steps
+          set_fact:
+            __is_new: "{{ __checkout.rc == 20 }}"
+            __present_python_files: "{{ present_python_files
+              if 'python_roles' in group_names
+              else [] }}"
+            __present_python_templates: "{{ present_python_templates
+              if 'python_roles' in group_names
+              else [] }}"
+            __absent_python_files: "{{ absent_python_files
+              if 'python_roles' in group_names
+              else [] }}"
+
+        - name: Set more vars
+          set_fact:
+            __all_present: "{{ present_files + __present_python_files +
+              present_templates + __present_python_templates }}"
+            __all_absent: "{{ absent_files + __absent_python_files }}"
+
+        - name: Ensure directories exist for added files
+          file:
+            path: "{{ git_dir }}/{{ item }}"
+            state: directory
+            mode: 0777
+          loop: "{{ __all_present | map('dirname') | unique }}"
+          when: item | length > 0
+
+        - name: Process files to be added or updated
+          copy:
+            src: "{{ item }}"
+            dest: "{{ git_dir }}/{{ item }}"
+            mode: preserve
+          loop: "{{ present_files + __present_python_files }}"
+
+        # NOTE: Some of the templates are github action definitions
+        # which use ${{ var }} - you may have to put {%- raw %}
+        # {%- endraw +%} blocks around them.
+        - name: Process templates to be added or updated
+          template:
+            src: "{{ item }}"
+            dest: "{{ git_dir }}/{{ item }}"
+            mode: 0644
+          loop: "{{ present_templates + __present_python_templates }}"
+
+        - name: Create git commit, PR
+          changed_when: false
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euo pipefail
+              for file in {{ __all_present | join(" ") }}; do
+                  git add "$file"
+              done
+              for file in {{ __all_absent | join(" ") }}; do
+                  if [ ! -f "$file" ]; then
+                    echo WARNING: file to be deleted was not found: "$file"
+                  else
+                    git rm -f "$file"
+                  fi
+              done
+              if git diff --cached --quiet; then
+                echo No updates for role {{ inventory_hostname }}
+              else
+                git commit -s -F {{ update_files_commit_file | quote }}
+                force_flag="{{ __is_new | ternary('', '-f') }}"
+                if [ {{ lsr_dry_run | d('true') }} = false ]; then
+                  git push $force_flag -u origin {{ update_files_branch | quote }}
+                echo
+                  echo git push $force_flag -u origin {{ update_files_branch | quote }}
+                fi
+              fi
+              prnum="$(gh pr list -H {{ update_files_branch | quote }} --json number --jq '.[].number')"
+              if [ -z "$prnum" ]; then
+                if [ {{ lsr_dry_run | d('true') }} = false ]; then
+                  retries=0
+                  backoff=10
+                  while [ "$retries" -lt 10 ]; do
+                    if gh pr create --fill --base "{{ __main_br }}"; then
+                      break
+                    else
+                      echo backing off "$backoff" seconds . . .
+                      sleep "$backoff"
+                      backoff=$(expr "$backoff" + 10)
+                      retries=$(expr "$retries" + 1)
+                    fi
+                  done
+                else
+                  echo gh pr create --fill --base "{{ __main_br }}"
+                fi
+              else
+                echo Existing PR "$prnum"
+              fi
+      always:
+        - name: Clean up temp working dir
+          file:
+            path: "{{ __working_dir.path }}"
+            state: absent
+          when: test_dir is not defined

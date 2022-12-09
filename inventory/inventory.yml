@@ -1,0 +1,135 @@
+all:
+  hosts:
+    ad_integration:
+      ansible_host: localhost
+    auto-maintenance:
+      ansible_host: localhost
+    bootloader:
+      ansible_host: localhost
+    certificate:
+      ansible_host: localhost
+    ci-testing:
+      ansible_host: localhost
+    cockpit:
+      ansible_host: localhost
+    crypto_policies:
+      ansible_host: localhost
+    ee_linux_automation:
+      ansible_host: localhost
+    ee_linux_system_roles:
+      ansible_host: localhost
+    enhancements:
+      ansible_host: localhost
+    experimental-azure-firstboot:
+      ansible_host: localhost
+    firewall:
+      ansible_host: localhost
+    .github:
+      ansible_host: localhost
+    ha_cluster:
+      ansible_host: localhost
+    image_builder:
+      ansible_host: localhost
+    journald:
+      ansible_host: localhost
+    kdump:
+      ansible_host: localhost
+    kernel_settings:
+      ansible_host: localhost
+    linux-system-roles.github.io:
+      ansible_host: localhost
+    logging:
+      ansible_host: localhost
+    lsr-gh-action-py26:
+      ansible_host: localhost
+    meta_test:
+      ansible_host: localhost
+    metrics:
+      ansible_host: localhost
+    mssql:
+      ansible_host: localhost
+    nbde_client:
+      ansible_host: localhost
+    nbde_server:
+      ansible_host: localhost
+    network:
+      ansible_host: localhost
+    pam_pwd:
+      ansible_host: localhost
+    podman:
+      ansible_host: localhost
+    postfix:
+      ansible_host: localhost
+    postgresql:
+      ansible_host: localhost
+    rhc:
+      ansible_host: localhost
+    sap-base-settings:
+      ansible_host: localhost
+    sap-hana-preconfigure:
+      ansible_host: localhost
+    sap-netweaver-preconfigure:
+      ansible_host: localhost
+    sap-preconfigure:
+      ansible_host: localhost
+    selinux:
+      ansible_host: localhost
+    ssh:
+      ansible_host: localhost
+    storage:
+      ansible_host: localhost
+    template:
+      ansible_host: localhost
+    test-harness:
+      ansible_host: localhost
+    timesync:
+      ansible_host: localhost
+    tlog:
+      ansible_host: localhost
+    tox-lsr:
+      ansible_host: localhost
+    tuned:
+      ansible_host: localhost
+    vpn:
+      ansible_host: localhost
+  children:
+    active_roles:
+      hosts:
+        ad_integration:
+        bootloader:
+        certificate:
+        cockpit:
+        crypto_policies:
+        firewall:
+        ha_cluster:
+        journald:
+        kdump:
+        kernel_settings:
+        logging:
+        metrics:
+        mssql:
+        nbde_client:
+        nbde_server:
+        network:
+        pam_pwd:
+        podman:
+        postfix:
+        postgresql:
+        rhc:
+        ssh:
+        storage:
+        template:
+        timesync:
+        tlog:
+        vpn:
+    python_roles:
+      hosts:
+        certificate:
+        firewall:
+        kernel_settings:
+        nbde_client:
+        nbde_server:
+        network:
+        selinux:
+        storage:
+        vpn:

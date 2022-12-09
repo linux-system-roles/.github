@@ -1,0 +1,7 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 3 * * 0"
+ansible_lint:
+  mock_modules:
+    - ini_file
