@@ -1,0 +1,14 @@
+mutation {
+    createBranchProtectionRule(input:{
+{% for key, value in bpr.items() %}
+        {{ key }}:{{ value | to_nice_json }},
+{% endfor %}
+        repositoryId:"{{ repo.id }}"
+    }) {
+        branchProtectionRule {
+            id
+            allowsForcePushes
+        }
+        clientMutationId
+    }
+}

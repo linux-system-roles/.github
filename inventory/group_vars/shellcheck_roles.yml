@@ -3,3 +3,6 @@ present_shellcheck_templates:
   - .github/workflows/shellcheck.yml
 absent_shellcheck_files:
   - .github/workflows/differential-shellcheck.yml
+# these are additional status checks for shell code
+shellcheck_status_check_contexts:
+  - shellcheck

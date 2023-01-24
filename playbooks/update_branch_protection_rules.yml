@@ -1,0 +1,112 @@
+# use the graphql variable names
+- name: Manage branch protection rules
+  hosts: active_roles
+  connection: local
+  gather_facts: false
+  tasks:
+    - name: Get gh config file
+      slurp:
+        path: "{{ lookup('env', 'HOME') ~ '/.config/gh/hosts.yml' }}"
+      register: gh_cfg_file
+
+    - name: Get token
+      set_fact:
+        token: "{{ cfg_dict['github.com']['oauth_token'] }}"
+      vars:
+        cfg_dict: "{{ gh_cfg_file.content | b64decode | from_yaml }}"
+
+    - name: Get Branch Protection Rules
+      uri:
+        url: https://api.github.com/graphql
+        method: POST
+        headers:
+          content-type: "application/json"
+          authorization: "Bearer {{ token }}"
+          X-Github-Next-Global-ID: "1"
+        body_format: json
+        body:
+          query: "{{ lookup('template', 'graphql_files/get_branch_protection_rules.graphql') }}"
+          # variables: "{{ lookup('template', './test_vars.yml') | from_yaml | to_nice_json }}"
+      vars:
+        __bpr_fields: "{{ (branchProtectionRules | first).keys() | list }}"
+      register: __query_result
+
+    - name: Result
+      debug:
+        msg: "{{ __query_result.json.data | to_nice_json }}"
+        verbosity: 3
+
+    - name: Convert result to canonical format
+      set_fact:
+        repo: |
+          {% set __repo = {} %}
+          {% for key, value in __query_result.json.data.repository.items() %}
+          {%   if key == "branchProtectionRules" %}
+          {%     set _ = __repo.update({key: []})%}
+          {%     for edge in value["edges"] %}
+          {%       if "node" in edge %}
+          {%         set _ = __repo[key].append(edge["node"]) %}
+          {%       endif %}
+          {%     endfor %}
+          {%   else %}
+          {%     set _ = __repo.update({key: value})%}
+          {%   endif %}
+          {% endfor %}
+          {{ __repo }}
+
+    - name: Show converted result
+      debug:
+        msg: repo {{ repo | to_nice_json }}
+        verbosity: 3
+
+    - name: Update Branch Protection Rules if needed
+      vars:
+        __expected: "{{ branchProtectionRules | sort(attribute='pattern') | map('combine', {'id': ''}) }}"
+        __actual: "{{ repo.branchProtectionRules | sort(attribute='pattern') | map('combine', {'id': ''}) }}"
+      when: __expected != __actual
+      block:
+        - name: Remove existing rules
+          uri:
+            url: https://api.github.com/graphql
+            method: POST
+            headers:
+              content-type: "application/json"
+              authorization: "Bearer {{ token }}"
+              X-Github-Next-Global-ID: "1"
+            body_format: json
+            body:
+              query: "{{ lookup('template', 'graphql_files/delete_branch_protection_rules.graphql') }}"
+              # variables: "{{ lookup('template', './test_vars.yml') | from_yaml | to_nice_json }}"
+          register: __delete_result
+          vars:
+            bpr_id: "{{ item.id }}"
+          loop: "{{ repo.branchProtectionRules }}"
+
+        - name: Show delete result
+          debug:
+            msg: __delete_result {{ __delete_result.json.data | to_nice_json }}
+            verbosity: 3
+          when: __delete_result.json is defined
+
+        - name: Add expected rules
+          uri:
+            url: https://api.github.com/graphql
+            method: POST
+            headers:
+              content-type: "application/json"
+              authorization: "Bearer {{ token }}"
+              X-Github-Next-Global-ID: "1"
+            body_format: json
+            body:
+              query: "{{ lookup('template', 'graphql_files/create_branch_protection_rules.graphql') }}"
+              # variables: "{{ lookup('template', './test_vars.yml') | from_yaml | to_nice_json }}"
+          register: __create_result
+          loop: "{{ branchProtectionRules }}"
+          loop_control:
+            loop_var: bpr
+
+        - name: Show create result
+          debug:
+            msg: "{{ __create_result.json.data | to_nice_json }}"
+            verbosity: 3
+          when: __create_result.json is defined

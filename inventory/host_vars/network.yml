@@ -44,3 +44,12 @@ yamllint:
         /tests/tests_bond_cloned_mac_initscripts.yml
         /tests/tests_bridge_cloned_mac_initscripts.yml
         /tests/tests_bridge_cloned_mac_nm.yml
+# these are added to the list of default status check contexts
+status_check_contexts:
+  - DCO
+  - markdownlint
+  - integration (c8s)
+  - integration (c9s)
+  - integration (c7)
+  - python-26
+  - woke

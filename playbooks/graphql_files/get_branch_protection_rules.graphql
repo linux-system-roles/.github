@@ -1,0 +1,15 @@
+query {
+    repository(owner:"{{ github_org }}", name:"{{ inventory_hostname }}") {
+        id
+        branchProtectionRules(first:50) {
+            edges {
+                node {
+                    id
+{% for param in __bpr_fields %}
+                    {{ param }}
+{% endfor %}
+                }
+            }
+        }
+    }
+}
