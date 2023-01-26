@@ -1,0 +1,10 @@
+ansible_lint:
+  extra_vars:
+    targets: targets
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 5 * * 6"
+  codeql:
+    schedule:
+      - cron: "48 9 * * 6"

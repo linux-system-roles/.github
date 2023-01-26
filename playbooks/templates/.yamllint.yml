@@ -1,0 +1,12 @@
+# SPDX-License-Identifier: MIT
+---
+extends: default
+ignore: |
+  /.tox/
+{% if yamllint.ignore is defined %}
+{{ yamllint.ignore | indent(width=2, first=true) }}
+{%- endif +%}
+{%- if yamllint.rules is defined %}
+rules:
+{{ yamllint.rules | to_nice_yaml(indent=2) | indent(width=2, first=true) }}
+{%- endif %}

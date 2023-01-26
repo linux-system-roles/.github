@@ -1,0 +1,7 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 12 * * 6"
+ansible_lint:
+  mock_roles:
+    - linux-system-roles.template

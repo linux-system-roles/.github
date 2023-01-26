@@ -1,0 +1,7 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 2 * * 0"
+ansible_lint:
+  extra_vars:
+    targets: target_hosts

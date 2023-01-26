@@ -1,0 +1,7 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 0 * * 6"
+ansible_lint:
+  skip_list:
+    - galaxy[no-changelog]

@@ -1,0 +1,29 @@
+---
+profile: production
+kinds:
+  - yaml: "**/meta/collection-requirements.yml"
+  - yaml: "**/tests/collection-requirements.yml"
+  - playbook: "**/tests/tests_*.yml"
+  - playbook: "**/tests/setup-snapshot.yml"
+  - tasks: "**/tests/*.yml"
+  - playbook: "**/tests/playbooks/*.yml"
+  - tasks: "**/tests/tasks/*.yml"
+  - tasks: "**/tests/tasks/*/*.yml"
+  - vars: "**/tests/vars/*.yml"
+  - playbook: "**/examples/*.yml"
+{# list valued params #}
+{% for param in ['skip_list', 'warn_list', 'exclude_paths', 'mock_modules', 'mock_roles'] %}
+{%   set val = (default_ansible_lint | d({})).get(param, []) + (ansible_lint | d({})).get(param, []) %}
+{%   if val %}
+{{ param }}:
+{{ val | to_nice_yaml(indent=2) | indent(width=2, first=true) -}}
+{%   endif %}
+{% endfor %}
+{# dict valued params #}
+{% for param in ['extra_vars'] %}
+{%   set val = (default_ansible_lint | d({})).get(param, {}) | combine((ansible_lint | d({})).get(param, {})) %}
+{%   if val %}
+{{ param }}:
+{{ val | to_nice_yaml(indent=2) | indent(width=2, first=true) -}}
+{%   endif %}
+{% endfor %}

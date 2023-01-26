@@ -1,0 +1,8 @@
+github_actions:
+  weekly_ci:
+    schedule:
+      - cron: "0 10 * * 6"
+ansible_lint:
+  skip_list:
+    - galaxy[no-changelog]  # vendor
+    - meta-unsupported-ansible  # vendor

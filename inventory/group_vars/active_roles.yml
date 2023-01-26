@@ -1,0 +1,30 @@
+present_files: []
+present_templates:
+  - .ansible-lint
+  - .yamllint.yml
+  - .github/workflows/ansible-lint.yml
+  - .github/workflows/ansible-managed-var-comment.yml
+  - .github/workflows/ansible-plugin-scan.yml
+  - .github/workflows/ansible-test.yml
+  - .github/workflows/changelog_to_tag.yml
+  - .github/workflows/shellcheck.yml
+  - .github/workflows/weekly_ci.yml
+absent_files:
+  - .github/workflows/tox.yml
+github_org: linux-system-roles
+github_url_prefix: "https://github.com/"
+default_ansible_lint:
+  skip_list:
+    - fqcn-builtins
+  warn_list: []
+  exclude_paths:
+    - tests/roles/
+    - .github/
+    - examples/roles/
+  mock_roles:
+    - linux-system-roles.{{ inventory_hostname }}
+lsr_namespace: fedora
+lsr_name: linux_system_roles
+lsr_role_namespace: linux_system_roles  # for ansible-lint
+gha_checkout_action: actions/checkout@v3
+tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@2.13.1"
