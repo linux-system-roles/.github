@@ -63,6 +63,7 @@
                 exit 10
               elif git checkout {{ update_files_branch | quote }} > /dev/null 2>&1; then
                 git rebase "{{ __main_br }}"
+                git reset --soft HEAD^
                 exit 10
               else
                 git checkout -b {{ update_files_branch | quote }}
