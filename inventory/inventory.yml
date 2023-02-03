@@ -116,6 +116,7 @@ all:
         postfix:
         postgresql:
         rhc:
+        selinux:
         ssh:
         storage:
         template:

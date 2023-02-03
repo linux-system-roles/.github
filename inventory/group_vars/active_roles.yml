@@ -1,4 +1,5 @@
-present_files: []
+present_files:
+  - .github/dependabot.yml
 present_templates:
   - .ansible-lint
   - .yamllint.yml
