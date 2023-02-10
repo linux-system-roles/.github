@@ -75,3 +75,13 @@ jobs:
           esac
           TOXENV="$toxenvs" lsr_ci_runtox
 {%- endraw +%}
+{% if inventory_hostname == 'network' %}
+  python-26:
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout PR
+        uses: {{ gha_checkout_action }}
+
+      - name: Run py26 tests
+        uses: linux-system-roles/lsr-gh-action-py26@1.0.2
+{% endif %}
