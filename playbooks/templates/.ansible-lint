@@ -3,6 +3,7 @@ profile: production
 kinds:
   - yaml: "**/meta/collection-requirements.yml"
   - yaml: "**/tests/collection-requirements.yml"
+  - playbook: "**/tests/get_coverage.yml"
   - playbook: "**/tests/tests_*.yml"
   - playbook: "**/tests/setup-snapshot.yml"
   - tasks: "**/tests/*.yml"

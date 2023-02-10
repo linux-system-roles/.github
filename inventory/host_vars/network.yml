@@ -10,6 +10,8 @@ ansible_lint:
     - load-failure  # allow include_tasks with tasks/ directory
   exclude_paths:
     - tests/
+  extra_vars:
+    test_playbook: test_playbook
 yamllint:
   ignore: |
     tests/roles/
