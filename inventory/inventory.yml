@@ -142,4 +142,5 @@ all:
         metrics:
         nbde_client:
         network:
+        ssh:
         timesync:
