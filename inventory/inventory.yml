@@ -134,3 +134,12 @@ all:
         selinux:
         storage:
         vpn:
+    shellcheck_roles:
+      hosts:
+        firewall:
+        ha_cluster:
+        kernel_settings:
+        metrics:
+        nbde_client:
+        network:
+        timesync:
