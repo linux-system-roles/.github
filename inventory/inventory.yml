@@ -143,4 +143,6 @@ all:
         nbde_client:
         network:
         ssh:
+        storage:
         timesync:
+        vpn:
