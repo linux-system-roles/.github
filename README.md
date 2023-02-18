@@ -145,3 +145,33 @@ ansible-playbook -vv -i inventory -e update_files_commit_file=/path/to/git-commi
 NOTE: This process may create multiple commits if you need to make edits to an
 existing PR.  Use the `Squash commits and merge` functionality in the github PR
 to merge.
+
+# Manage Branch Protection Rules
+
+The playbook `playbooks/update_branch_protection_rules.yml` is used to manage
+branch protection rules for the `main` branch.  The default rules are specified
+in `branchProtectionRules` in `inventory/group_vars/active_roles.yml`. The
+additional status checks for python code are specified in
+`python_status_check_contexts` in `inventory/group_vars/python_roles.yml`.  The
+additional status checks for shell code are specified in
+`shellcheck_status_check_contexts` in
+`inventory/group_vars/shellcheck_roles.yml`.
+
+These use the github graphql api https://docs.github.com/en/graphql.  The
+graphql files are in the `playbooks/graphql_files/` directory.
+
+The general strategy is to get the existing role rules.  If they are different
+than the specified rules, delete them and add the specified rules.
+
+There aren't any parameters, but if you use `-vvv` or higher verbosity,
+you can see the data being sent and received.
+
+*NOTE WELL*: This playbook does not create PRs - it modifies the role
+configuration directly - so be careful.
+
+## Run it
+
+Run it like this:
+```
+ansible-playbook -vv -i inventory playbooks/update_branch_protection_rules.yml
+```
