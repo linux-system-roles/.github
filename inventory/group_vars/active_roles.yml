@@ -52,7 +52,8 @@ branchProtectionRules:
     requiredStatusCheckContexts: "{{ default_status_check_contexts +
       status_check_contexts | d([]) +
       python_status_check_contexts | d([]) +
-      shellcheck_status_check_contexts | d([]) | unique }}"
+      shellcheck_status_check_contexts | d([]) | unique |
+      sort(case_sensitive=false) }}"
     requiresApprovingReviews: true
     requiresCodeOwnerReviews: true
     requiresCommitSignatures: true
