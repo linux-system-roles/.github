@@ -8,6 +8,22 @@ query {
 {% for param in __bpr_fields %}
                     {{ param }}
 {% endfor %}
+{#
+                    requiredStatusChecks {
+                      context
+                      app {
+                        createdAt
+                        databaseId
+                        description
+                        logoBackgroundColor
+                        logoUrl
+                        name
+                        slug
+                        updatedAt
+                        url
+                      }
+                    }
+#}
                 }
             }
         }

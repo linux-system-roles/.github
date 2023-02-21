@@ -56,7 +56,7 @@
 
     - name: Show converted result
       debug:
-        msg: repo {{ repo | to_nice_json }}
+        msg: repo {{ repo | to_nice_json }} bpr {{ branchProtectionRules | to_nice_json }}
         verbosity: 3
 
     - name: Update Branch Protection Rules if needed
