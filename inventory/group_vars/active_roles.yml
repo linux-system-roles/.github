@@ -38,12 +38,13 @@ default_status_check_contexts:
   - Fedora-36/ansible-2.14/(citool)
   - Fedora-36/ansible-2.9/(citool)
 # https://docs.github.com/en/graphql/reference/objects#branchprotectionrule
+isAdminEnforced: false
 branchProtectionRules:
   - allowsDeletions: false
     allowsForcePushes: false
     blocksCreations: false
     dismissesStaleReviews: true
-    isAdminEnforced: true
+    isAdminEnforced: "{{ isAdminEnforced }}"
     lockAllowsFetchAndMerge: false
     lockBranch: false
     pattern: main

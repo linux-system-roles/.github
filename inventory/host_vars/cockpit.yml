@@ -2,3 +2,5 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 12 * * 6"
+# branch protection
+isAdminEnforced: true
