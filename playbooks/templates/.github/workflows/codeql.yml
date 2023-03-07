@@ -12,6 +12,7 @@ on:  # yamllint disable-line rule:truthy
       - checks_requested
   schedule:
 {{ github_actions.codeql.schedule | to_nice_yaml(indent=2) | indent(width=4, first=true) -}}
+  workflow_dispatch:
 jobs:
   analyze:
     name: Analyze
