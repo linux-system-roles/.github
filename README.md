@@ -1,11 +1,13 @@
-# .github
+.github - common file and configuration management for system roles
+===================================================================
 
 The configuration source for linux-system-roles repositories.  This uses Ansible
 to manage configuration, github actions, and other common files used by
 repositories in the linux-system-roles organization.  This allows org admins to
 easily rollout updates to all repos.
 
-# File structure
+File structure
+--------------
 
 The structure of the files/directories under `playbooks/files` and
 `playbooks/templates` should match exactly the name and location of the
@@ -29,13 +31,16 @@ code.
 
 The file `inventory/host_vars/$ROLENAME.yml` is used for settings that are
 specific to that role.  Some examples:
+
 * The scheduled time for a github action
 * .ansible-lint or .yamllint.yml customizations
 
-# Add a new role
+Add a new role
+--------------
 
 * Edit inventory.yml
 * Add the role in alphabetical order to the `all.hosts` section:
+
 ```yaml
 all:
   hosts:
@@ -47,23 +52,29 @@ all:
     rhc:
       ansible_host: localhost
 ```
+
 * Add the role to the `active_roles.hosts` section:
+
 ```yaml
         postgresql:
         quite_a_good_new_role:
         rhc:
 ```
+
 * If the role has python modules or filters or other plugins,
   add to the `python_roles.hosts` section:
+
 ```yaml
         network:
         quite_a_good_new_role:
         selinux:
 ```
+
 * Add the new file `inventory/host_vars/$ROLENAME.yml` - add any customizations
   for the github actions weekly_ci, ansible_lint, etc.
 
-# Add a new config or github action file
+Add a new config or github action file
+--------------------------------------
 
 * Add the file under `playbooks/files` or `playbooks/templates`
 
@@ -90,35 +101,41 @@ Ansible python code that are static.
 `absent_python_files` are files that should be removed from roles that provide
 Ansible python code.
 
-# Preparing for using the automation
+Preparing for using the automation
+----------------------------------
 
 This uses the [gh](https://cli.github.com/) command line tool provided by the
 `gh` package on Fedora.
 To configure Github tools to run the automation, complete the following steps:
 
-1. Configure `gh` to authenticate to github using `~/.config/gh/hosts.yml`:
+* Configure `gh` to authenticate to github using `~/.config/gh/hosts.yml`:
+
     ```yaml
     github.com:
       user: my_user_name
       oauth_token: my_oauth_token
       git_protocol: ssh
     ```
+
     Or by running interactive `gh auth login`.
 
-2. Configure credentials caching by running:
+* Configure credentials caching by running:
+
     ```
     $ git config --global credential.helper cache
     ```
+
     The next time GitHub asks you to log in, use your username and auth token.
 
-# Creating PRs in every role with updated files
+Creating PRs in every role with updated files
+---------------------------------------------
 
 The playbook `playbooks/update_files.yml` will create PRs in all roles with the
 new/updated/deleted files.
 If you just want to see what the playbook will do without actually creating
 anything on github, add `-e lsr_dry_run=true` to the ansible-playbook command.
 
-## Parameters
+### Parameters
 
 * `update_files_commit_file` - REQUIRED, no default - This is the path to the
   file containing the git commit message to use for the commit, and will also be
@@ -129,15 +146,18 @@ anything on github, add `-e lsr_dry_run=true` to the ansible-playbook command.
 * `update_files_branch` - default "update_role_files" - this is the name of the
   git branch that will be used for the PR.  You probably don't want to change
   this unless you have some conflict.
+* `lsr_dry_run` - default `true` - use `false` to actually push and create PRs
 
-## Run it
+### Run it
 
 Run it like this:
+
 ```
-ansible-playbook -vv -i inventory -e update_files_commit_file=/path/to/git-commit-msg playbooks/update_files.yml
+ansible-playbook -vv -i inventory -e lsr_dry_run=false \
+  -e update_files_commit_file=/path/to/git-commit-msg playbooks/update_files.yml
 ```
 
-## How it works
+### How it works
 
 * A temp directory is created
 * All of the roles are cloned into that directory

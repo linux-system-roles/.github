@@ -9,3 +9,7 @@ ansible_lint:
   extra_vars:
     test_playbook: tests_default.yml
     network_provider: nm
+yamllint:
+  ignore: |
+    tests/roles/
+role_specific_contributing: include_files/network_contributing.md

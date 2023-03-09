@@ -5,3 +5,4 @@ github_actions:
   codeql:
     schedule:
       - cron: "8 10 * * 3"
+role_specific_contributing: include_files/storage_contributing.md

@@ -4,6 +4,7 @@ present_files:
 present_templates:
   - .ansible-lint
   - .yamllint.yml
+  - contributing.md
   - .github/workflows/ansible-lint.yml
   - .github/workflows/ansible-managed-var-comment.yml
   - .github/workflows/ansible-plugin-scan.yml
@@ -14,6 +15,8 @@ present_templates:
   - README-ansible.md
 absent_files:
   - .github/workflows/tox.yml
+  - README-devel.md
+  - README-testing.md
 github_org: linux-system-roles
 github_url_prefix: "https://github.com/"
 default_ansible_lint:
