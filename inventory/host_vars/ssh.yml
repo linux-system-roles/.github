@@ -2,3 +2,4 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 21 * * 6"
+role_specific_contributing: include_files/ssh_contributing.md
