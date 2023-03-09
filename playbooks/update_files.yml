@@ -116,7 +116,8 @@
             src: "{{ item }}"
             dest: "{{ git_dir }}/{{ item }}"
             mode: preserve
-          loop: "{{ present_files + __present_python_files }}"
+          loop: "{{ present_files + __present_python_files +
+            __present_shellcheck_files }}"
 
         # NOTE: Some of the templates are github action definitions
         # which use ${{ var }} - you may have to put {%- raw %}
@@ -126,7 +127,8 @@
             src: "{{ item }}"
             dest: "{{ git_dir }}/{{ item }}"
             mode: 0644
-          loop: "{{ present_templates + __present_python_templates }}"
+          loop: "{{ present_templates + __present_python_templates +
+              __present_shellcheck_templates }}"
 
         - name: Create git commit, PR
           changed_when: false
