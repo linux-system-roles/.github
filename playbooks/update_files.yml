@@ -84,24 +84,12 @@
             __absent_python_files: "{{ absent_python_files
               if 'python_roles' in group_names
               else [] }}"
-            __present_shellcheck_files: "{{ present_shellcheck_files
-              if 'shellcheck_roles' in group_names
-              else [] }}"
-            __present_shellcheck_templates: "{{ present_shellcheck_templates
-              if 'shellcheck_roles' in group_names
-              else [] }}"
-            __absent_shellcheck_files: "{{ absent_shellcheck_files
-              if 'shellcheck_roles' in group_names
-              else [] }}"
 
         - name: Set more vars
           set_fact:
             __all_present: "{{ present_files + __present_python_files +
-              __present_shellcheck_files +
-              present_templates + __present_python_templates +
-              __present_shellcheck_templates }}"
-            __all_absent: "{{ absent_files + __absent_python_files +
-              __absent_shellcheck_files }}"
+              present_templates + __present_python_templates }}"
+            __all_absent: "{{ absent_files + __absent_python_files }}"
 
         - name: Ensure directories exist for added files
           file:
