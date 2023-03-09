@@ -12,6 +12,7 @@ present_templates:
   - .github/workflows/weekly_ci.yml
 absent_files:
   - .github/workflows/tox.yml
+  - .github/workflows/differential-shellcheck.yml
 github_org: linux-system-roles
 github_url_prefix: "https://github.com/"
 default_ansible_lint:
