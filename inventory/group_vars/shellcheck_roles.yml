@@ -1,4 +1,5 @@
 present_shellcheck_files: []
 present_shellcheck_templates:
   - .github/workflows/shellcheck.yml
-absent_shellcheck_files: []
+absent_shellcheck_files:
+  - .github/workflows/differential-shellcheck.yml
