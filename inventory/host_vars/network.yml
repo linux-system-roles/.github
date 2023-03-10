@@ -11,7 +11,7 @@ ansible_lint:
   exclude_paths:
     - tests/
   extra_vars:
-    test_playbook: test_playbook
+    test_playbook: tests_default.yml
 yamllint:
   ignore: |
     tests/roles/
@@ -22,7 +22,6 @@ yamllint:
     brackets:
       max-spaces-inside: 1
       level: error
-    truthy: disable
     document-start: disable
     line-length:
       ignore: |
