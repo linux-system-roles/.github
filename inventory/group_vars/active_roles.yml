@@ -8,10 +8,11 @@ present_templates:
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/ansible-test.yml
   - .github/workflows/changelog_to_tag.yml
+  - .github/workflows/shellcheck.yml
   - .github/workflows/weekly_ci.yml
 absent_files:
   - .github/workflows/tox.yml
-  - .github/workflows/shellcheck.yml
+  - .github/workflows/differential-shellcheck.yml
 github_org: linux-system-roles
 github_url_prefix: "https://github.com/"
 default_ansible_lint:
