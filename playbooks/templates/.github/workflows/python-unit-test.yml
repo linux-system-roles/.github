@@ -3,6 +3,11 @@
 name: Python Unit Tests
 on:  # yamllint disable-line rule:truthy
   pull_request:
+  merge_group:
+    branches:
+      - main
+    types:
+      - checks_requested
   push:
     branches:
       - main
@@ -79,6 +84,7 @@ jobs:
         uses: codecov/codecov-action@v3
 {%- endraw +%}
 {% if inventory_hostname == 'network' %}
+
   python-26:
     runs-on: ubuntu-latest
     steps:
