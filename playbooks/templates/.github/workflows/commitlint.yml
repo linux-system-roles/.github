@@ -57,14 +57,3 @@ jobs:
           echo ${{ github.event.pull_request.title }} | npx commitlint --verbose
 {%- endraw +%}
 
-      - name: Fail if more than one commits exist in the PR
-{%- raw %}
-        if: ${{ github.event.pull_request.commits != 1 }}
-{%- endraw +%}
-        run: |
-          cat << EOF
-          You must squash commits into one.
-          Run 'git rebase -i origin/main' and replace 'pick' with 's' for all
-          commits except the first.
-          EOF
-          exit 1
