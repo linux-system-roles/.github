@@ -10,7 +10,7 @@ jobs:
   commit-checks:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v2
+      - uses: {{ gha_checkout_action }}
         with:
           fetch-depth: 0
 
@@ -43,18 +43,24 @@ jobs:
         # (github.event.pull_request.commits) to find the start commit
         # i.e. HEAD~N does not work, this breaks if there are merge commits.
         run: |
+{%- raw %}
           echo "PR_HEAD=${{ github.event.pull_request.head.sha }}" >> $GITHUB_ENV
           echo "PR_BASE=${{ github.event.pull_request.base.sha }}" >> $GITHUB_ENV
+{%- endraw +%}
 
       - name: Run commitlint on commits
         run: npx commitlint --from $PR_BASE --to $PR_HEAD --verbose
 
       - name: Run commitlint on PR title
         run: |
+{%- raw %}
           echo ${{ github.event.pull_request.title }} | npx commitlint --verbose
+{%- endraw +%}
 
       - name: Fail if more than one commits exist in the PR
+{%- raw %}
         if: ${{ github.event.pull_request.commits != 1 }}
+{%- endraw +%}
         run: |
           cat << EOF
           You must squash commits into one.
