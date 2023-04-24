@@ -90,19 +90,31 @@ Ansible python code that are static.
 `absent_python_files` are files that should be removed from roles that provide
 Ansible python code.
 
+# Preparing for using the automation
+
+This uses the [gh](https://cli.github.com/) command line tool provided by the
+`gh` package on Fedora.
+To configure Github tools to run the automation, complete the following steps:
+
+1. Configure `gh` to authenticate to github using `~/.config/gh/hosts.yml`:
+    ```yaml
+    github.com:
+      user: my_user_name
+      oauth_token: my_oauth_token
+      git_protocol: ssh
+    ```
+    Or by running interactive `gh auth login`.
+
+2. Configure credentials caching by running:
+    ```
+    $ git config --global credential.helper cache
+    ```
+    The next time GitHub asks you to log in, use your username and auth token.
+
 # Creating PRs in every role with updated files
 
 The playbook `playbooks/update_files.yml` will create PRs in all roles with the
-new/updated/deleted files.  This uses the [gh](https://cli.github.com/) command
-line tool provided by the `gh` package on Fedora.  You will need to configure
-`gh` to authenticate to github using `~/.config/gh/hosts.yml`:
-```yaml
-github.com:
-  user: my_user_name
-  oauth_token: my_oauth_token
-  git_protocol: ssh
-```
-
+new/updated/deleted files.
 If you just want to see what the playbook will do without actually creating
 anything on github, add `-e lsr_dry_run=true` to the ansible-playbook command.
 
