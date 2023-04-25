@@ -1,5 +1,6 @@
 present_files:
   - .github/dependabot.yml
+  - .github/commitlint.config.js
 present_templates:
   - .ansible-lint
   - .yamllint.yml
