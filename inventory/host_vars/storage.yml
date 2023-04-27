@@ -5,10 +5,3 @@ github_actions:
   codeql:
     schedule:
       - cron: "8 10 * * 3"
-ansible_lint:
-  exclude_paths:
-    - tests/
-yamllint:
-  ignore: |-
-    /tests/
-    /.github/

@@ -5,3 +5,4 @@ github_actions:
 ansible_lint:
   skip_list:
     - galaxy[no-changelog]
+    - galaxy[no-runtime]
