@@ -3,3 +3,12 @@ present_python_templates:
   - .github/workflows/codeql.yml
   - .github/workflows/python-unit-test.yml
 absent_python_files: []
+# these are additional status checks for python code
+python_status_check_contexts:
+  - CodeQL
+  - python (2.7, ubuntu-20.04)
+  - python (3.6, ubuntu-20.04)
+  - python (3.8, ubuntu-latest)
+  - python (3.9, ubuntu-latest)
+  - python (3.10, ubuntu-latest)
+  - python (3.11, ubuntu-latest)

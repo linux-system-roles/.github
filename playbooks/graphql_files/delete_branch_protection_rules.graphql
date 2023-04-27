@@ -1,0 +1,7 @@
+mutation {
+    deleteBranchProtectionRule(input:{
+        branchProtectionRuleId:"{{ bpr_id }}"
+    }) {
+        clientMutationId
+    }
+}
