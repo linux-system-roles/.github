@@ -6,12 +6,9 @@ github_actions:
     schedule:
       - cron: "39 10 * * 0"
 ansible_lint:
-  warn_list:
-    - load-failure  # allow include_tasks with tasks/ directory
-  exclude_paths:
-    - tests/
   extra_vars:
     test_playbook: tests_default.yml
+    network_provider: nm
 yamllint:
   ignore: |
     tests/roles/
@@ -29,6 +26,7 @@ yamllint:
         /tests/tasks/setup_mock_wifi_wpa3_sae.yml
         /tests/tests_ethtool_coalesce_initscripts.yml
         /tests/tests_ethtool_ring_initscripts.yml
+        /tests/tests_route_device_initscripts.yml
         /tests/tests_team_plugin_installation_nm.yml
         /tests/tests_wireless_plugin_installation_nm.yml
         /tests/tests_wireless_wpa3_owe_nm.yml

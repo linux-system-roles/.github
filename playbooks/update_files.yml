@@ -177,6 +177,7 @@
                 fi
               else
                 echo Existing PR "$prnum"
+                echo {{ github_url_prefix ~ github_org ~ '/' ~ inventory_hostname ~ '/pull/' }}$prnum
               fi
       always:
         - name: Clean up temp working dir
