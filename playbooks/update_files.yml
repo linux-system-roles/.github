@@ -46,6 +46,7 @@
             repo: "{{ github_url_prefix ~ github_org ~ '/' ~ inventory_hostname }}"
             dest: "{{ git_dir }}"
           when: git_dir is not exists
+          changed_when: false
 
         - name: Set main branch var
           set_fact:
@@ -93,21 +94,30 @@
             __absent_shellcheck_files: "{{ absent_shellcheck_files
               if 'shellcheck_roles' in group_names
               else [] }}"
+            __role_present_templates: "{{ role_present_templates | d([]) }}"
+            __role_template_dir: role_templates/{{ inventory_hostname }}/
 
         - name: Set more vars
           set_fact:
             __all_present: "{{ present_files + __present_python_files +
               __present_shellcheck_files +
               present_templates + __present_python_templates +
-              __present_shellcheck_templates }}"
+              __present_shellcheck_templates +
+              __role_present_templates }}"
             __all_absent: "{{ absent_files + __absent_python_files +
               __absent_shellcheck_files }}"
 
+        # NOTE: If we add support for per-role or per-group overrides:
+        #  if the role/group does not want to install a file that is
+        #  otherwise in present_xxx, we'll have to figure out how
+        #  to remove that item from __all_present - for now, the items
+        #  role_present_templates and role_present_files can only add
+        #  new files, or overwrite files in present_xxx
         - name: Ensure directories exist for added files
           file:
             path: "{{ git_dir }}/{{ item }}"
             state: directory
-            mode: 0777
+            mode: "0755"
           loop: "{{ __all_present | map('dirname') | unique }}"
           when: item | length > 0
 
@@ -122,13 +132,19 @@
         # NOTE: Some of the templates are github action definitions
         # which use ${{ var }} - you may have to put {%- raw %}
         # {%- endraw +%} blocks around them.
+        # item.0 is the directory prefix where to find the src
+        # for role specific files, it will be role_templates/$role_name/
+        # otherwise it is '' (empty, no prefix)
+        # role specific files are processed last so they can overwrite
+        # existing files
         - name: Process templates to be added or updated
           template:
-            src: "{{ item }}"
-            dest: "{{ git_dir }}/{{ item }}"
-            mode: 0644
-          loop: "{{ present_templates + __present_python_templates +
-              __present_shellcheck_templates }}"
+            src: "{{ item.0 ~ item.1 }}"
+            dest: "{{ git_dir }}/{{ item.1 }}"
+            mode: "0644"
+          loop: "{{ ([''] | product(present_templates +
+            __present_python_templates + __present_shellcheck_templates)) +
+            ([__role_template_dir] | product(__role_present_templates)) }}"
 
         - name: Create git commit, PR
           changed_when: false
@@ -147,7 +163,9 @@
                   fi
               done
               if git diff --cached --quiet; then
+                # nothing to do
                 echo No updates for role {{ inventory_hostname }}
+                exit 0
               else
                 git commit -s -F {{ update_files_commit_file | quote }}
                 force_flag="{{ __is_new | ternary('', '-f') }}"

@@ -133,6 +133,7 @@ all:
       hosts:
         certificate:
         firewall:
+        ha_cluster:
         kernel_settings:
         nbde_client:
         nbde_server:
