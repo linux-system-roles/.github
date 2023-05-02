@@ -36,6 +36,8 @@ all:
       ansible_host: localhost
     kernel_settings:
       ansible_host: localhost
+    keylime_server:
+      ansible_host: localhost
     linux-system-roles.github.io:
       ansible_host: localhost
     logging:
@@ -78,6 +80,8 @@ all:
       ansible_host: localhost
     storage:
       ansible_host: localhost
+    systemd:
+      ansible_host: localhost
     template:
       ansible_host: localhost
     test-harness:
@@ -105,6 +109,7 @@ all:
         journald:
         kdump:
         kernel_settings:
+        keylime_server:
         logging:
         metrics:
         mssql:
@@ -119,6 +124,7 @@ all:
         selinux:
         ssh:
         storage:
+        systemd:
         template:
         timesync:
         tlog:
