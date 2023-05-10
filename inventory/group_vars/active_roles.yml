@@ -33,4 +33,4 @@ lsr_namespace: fedora
 lsr_name: linux_system_roles
 lsr_role_namespace: linux_system_roles  # for ansible-lint
 gha_checkout_action: actions/checkout@v3
-tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@2.13.2"
+tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@3.0.0"
