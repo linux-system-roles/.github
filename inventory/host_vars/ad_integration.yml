@@ -3,6 +3,8 @@ ansible_lint:
     - win_domain_group
     - win_domain_user
     - community.general.ini_file
+    - ansible.windows.win_command
+    - ansible.windows.win_shell
 github_actions:
   weekly_ci:
     schedule:

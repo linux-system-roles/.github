@@ -4,4 +4,4 @@ github_actions:
       - cron: "0 3 * * 0"
 ansible_lint:
   mock_modules:
-    - ini_file
+    - community.general.ini_file
