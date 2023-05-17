@@ -7,5 +7,7 @@ github_actions:
       - cron: "37 4 * * 4"
 ansible_lint:
   mock_modules:
-    - sefcontext
-    - selogin
+    - community.general.sefcontext
+    - community.general.selogin
+    - seboolean
+    - selinux

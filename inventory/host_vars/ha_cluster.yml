@@ -7,3 +7,10 @@ github_actions:
       - cron: "8 1 * * 4"
 role_present_templates:
   - .github/workflows/python-unit-test.yml
+# some ha_cluster code uses mypy - ansible-test does not like it
+# so we have to use compile-2.7!skip and import-x.y!skip - but
+# ansible-lint does not like that - so have to tell ansible-lint
+# to shut up
+ansible_lint:
+  skip_list:
+    - sanity[cannot-ignore]

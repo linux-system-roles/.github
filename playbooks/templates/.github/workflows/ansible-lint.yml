@@ -11,6 +11,9 @@ on:  # yamllint disable-line rule:truthy
     branches:
       - main
   workflow_dispatch:
+env:
+  LSR_ROLE2COLL_NAMESPACE: {{ lsr_namespace }}
+  LSR_ROLE2COLL_NAME: {{ lsr_name }}
 permissions:
   contents: read
 jobs:
@@ -26,18 +29,23 @@ jobs:
       - name: Checkout repo
         uses: {{ gha_checkout_action }}
 
-      - name: Fix up role meta/main.yml namespace and name
+      - name: Install tox, tox-lsr
         run: |
           set -euxo pipefail
-          mm=meta/main.yml
-          if [ -f "$mm" ]; then
-            if ! grep -q '^  *namespace:' "$mm"; then
-              sed "/galaxy_info:/a\  namespace: {{ lsr_role_namespace }}" -i "$mm"
-            fi
-            if ! grep -q '^  *role_name:' "$mm"; then
-              sed "/galaxy_info:/a\  role_name: {{ inventory_hostname }}" -i "$mm"
-            fi
-          fi
+          pip3 install "{{ tox_lsr_url }}"
+
+      - name: Convert role to collection format
+        run: |
+          set -euxo pipefail
+          TOXENV=collection lsr_ci_runtox
+          coll_dir=".tox/ansible_collections/$LSR_ROLE2COLL_NAMESPACE/$LSR_ROLE2COLL_NAME"
+          # ansible-lint action requires a .git directory???
+          # https://github.com/ansible/ansible-lint/blob/main/action.yml#L45
+          mkdir -p "$coll_dir/.git"
 
       - name: Run ansible-lint
-        uses: ansible-community/ansible-lint-action@v6
+        uses: ansible/ansible-lint@v6
+        with:
+{%- raw %}
+          working_directory: .tox/ansible_collections/${{ env.LSR_ROLE2COLL_NAMESPACE }}/${{ env.LSR_ROLE2COLL_NAME }}
+{%- endraw +%}

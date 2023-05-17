@@ -2,3 +2,6 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 19 * * 6"
+ansible_lint:
+  mock_modules:
+    - containers.podman.podman_container
