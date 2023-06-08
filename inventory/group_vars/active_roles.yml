@@ -1,5 +1,6 @@
 present_files:
   - .github/dependabot.yml
+  - .github/pull_request_template.md
   - .commitlintrc.js
 present_templates:
   - .ansible-lint
