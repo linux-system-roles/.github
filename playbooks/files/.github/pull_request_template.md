@@ -4,4 +4,4 @@ Reason:
 
 Result:
 
-Issue Tracker Ticket(Jira or BZ if any):
+Issue Tracker Tickets (Jira or BZ if any):
