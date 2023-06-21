@@ -11,10 +11,11 @@ present_templates:
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/ansible-test.yml
   - .github/workflows/changelog_to_tag.yml
-  - .github/workflows/commitlint.yml
+  - .github/workflows/pr-title-lint.yml
   - .github/workflows/weekly_ci.yml
   - README-ansible.md
 absent_files:
+  - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
   - README-devel.md
   - README-testing.md
