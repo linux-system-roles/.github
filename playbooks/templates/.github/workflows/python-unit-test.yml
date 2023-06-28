@@ -45,7 +45,14 @@ jobs:
         uses: {{ gha_checkout_action }}
 {%- raw %}
 
-      - name: Set up Python
+      - name: Set up Python 2.7
+        if: ${{ matrix.pyver_os.ver == '2.7' }}
+        run: |
+          set -euxo pipefail
+          sudo apt install -y python2.7
+
+      - name: Set up Python 3
+        if: ${{ matrix.pyver_os.ver != '2.7' }}
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.pyver_os.ver }}
