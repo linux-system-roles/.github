@@ -24,6 +24,7 @@ github_url_prefix: "https://github.com/"
 default_ansible_lint:
   skip_list:
     - fqcn-builtins
+    - var-naming[no-role-prefix]
   warn_list: []
   exclude_paths:
     - tests/roles/
