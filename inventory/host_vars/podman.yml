@@ -2,3 +2,6 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 16 * * 6"
+ansible_lint:
+  exclude_paths:
+    - tests/files/
