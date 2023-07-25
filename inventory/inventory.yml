@@ -140,6 +140,7 @@ all:
         network:
         selinux:
         storage:
+        systemd:
         vpn:
     shellcheck_roles:
       hosts:
