@@ -35,7 +35,6 @@ default_ansible_lint:
     - tests/roles/
     - .github/
     - .markdownlint.yaml
-    - .pandoc_template.html5
     - examples/roles/
   mock_roles:
     - linux-system-roles.{{ inventory_hostname }}
