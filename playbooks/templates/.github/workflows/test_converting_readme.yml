@@ -14,7 +14,7 @@ on:  # yamllint disable-line rule:truthy
 permissions:
   contents: read
 jobs:
-  convert_readme:
+  test_converting_readme:
     runs-on: ubuntu-latest
     permissions:
       contents: write

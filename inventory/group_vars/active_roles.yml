@@ -16,7 +16,7 @@ present_templates:
   - .github/workflows/changelog_to_tag.yml
   - .github/workflows/markdownlint.yml
   - .github/workflows/pr-title-lint.yml
-  - .github/workflows/test_html_build.yml
+  - .github/workflows/test_converting_readme.yml
   - .github/workflows/weekly_ci.yml
   - README-ansible.md
 absent_files:
