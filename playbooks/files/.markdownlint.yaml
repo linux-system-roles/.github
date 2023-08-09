@@ -112,10 +112,8 @@ MD022:
 # MD023/heading-start-left/header-start-left - Headings must start at the beginning of the line
 MD023: true
 
-# Modified for LSR
-# Disabling to allow for repeating titles to enhance readability with parallel structure
 # MD024/no-duplicate-heading/no-duplicate-header - Multiple headings with the same content
-MD024: false
+MD024: true
 
 # MD025/single-title/single-h1 - Multiple top-level headings in the same document
 MD025:
