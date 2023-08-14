@@ -2,6 +2,8 @@ present_files:
   - .github/dependabot.yml
   - .github/pull_request_template.md
   - .commitlintrc.js
+  - .markdownlint.yaml
+  - .pandoc_template.html5
 present_templates:
   - .ansible-lint
   - .yamllint.yml
@@ -10,8 +12,11 @@ present_templates:
   - .github/workflows/ansible-managed-var-comment.yml
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/ansible-test.yml
+  - .github/workflows/build_docs.yml
   - .github/workflows/changelog_to_tag.yml
+  - .github/workflows/markdownlint.yml
   - .github/workflows/pr-title-lint.yml
+  - .github/workflows/test_converting_readme.yml
   - .github/workflows/weekly_ci.yml
   - README-ansible.md
 absent_files:
@@ -29,6 +34,7 @@ default_ansible_lint:
   exclude_paths:
     - tests/roles/
     - .github/
+    - .markdownlint.yaml
     - examples/roles/
   mock_roles:
     - linux-system-roles.{{ inventory_hostname }}
