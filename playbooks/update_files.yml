@@ -1,5 +1,5 @@
 - name: Manage files in system roles repos
-  hosts: active_roles
+  hosts: network
   connection: local
   gather_facts: false
   vars:
@@ -64,7 +64,7 @@
                 exit 10
               elif git checkout {{ update_files_branch | quote }} > /dev/null 2>&1; then
                 git rebase "{{ __main_br }}"
-                git reset --soft HEAD^
+                git reset --hard HEAD^
                 exit 10
               else
                 git checkout -b {{ update_files_branch | quote }}
@@ -146,6 +146,36 @@
             __present_python_templates + __present_shellcheck_templates)) +
             ([__role_template_dir] | product(__role_present_templates)) }}"
 
+        - name: Find workflows to create badges for
+          find:
+            paths: "{{ git_dir }}/.github/workflows"
+            file_type: file
+            excludes:
+              - ansible-managed-var-comment.yml
+              - ansible-plugin-scan.yml
+              - build_docs.yml
+              - changelog_to_tag.yml
+              - pr-title-lint.yml
+              - test_converting_readme.yml
+              - weekly_ci.yml
+          register: find
+
+        - name: Ensure badges in README.md
+          lineinfile:
+            path: "{{ git_dir }}/README.md"
+            insertafter: '^# .*'
+            firstmatch: true
+            line: "\n{%for file in find.files %}\
+              ![{{ file.path | basename }}]\
+              (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file.path | basename }}/badge.svg)\
+              {{ ' ' if not loop.last else '' }}\
+              {{ ' ' if present_badges | d() | length > 0 else '' }}\
+              {% endfor %}
+              {% for badge in present_badges | d() %}
+              {{ badge }}\
+              {{ ' ' if not loop.last else '' }}\
+              {% endfor %}\n\n\n---"
+
         - name: Create git commit, PR
           changed_when: false
           shell:
@@ -155,6 +185,7 @@
               for file in {{ __all_present | join(" ") }}; do
                   git add "$file"
               done
+              git add README.md
               for file in {{ __all_absent | join(" ") }}; do
                   if [ ! -f "$file" ]; then
                     echo WARNING: file to be deleted was not found: "$file"

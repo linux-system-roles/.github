@@ -1,11 +1,10 @@
 
-Testing kernel_settings modules
--------------------------------
+## Testing kernel_settings modules
 
 It is recommended to use `tox` to set up your `virtualenv` for
 development/testing purposes:
 
-```
+```bash
 dnf/yum install python-tox
 tox -e py38
 ```
@@ -13,7 +12,7 @@ tox -e py38
 You can also use the virtualenv created by `tox` just like any
 other virtualenv created by `python-virtualenv`:
 
-```
+```bash
 . .tox/env-py38/bin/activate
 python
 >>> import package.that.only.exists.in.venv
@@ -31,7 +30,7 @@ run and debug unit tests.  However, you may need to create a `.env` file like
 this, in order for code navigation, auto-completion, and test discovery to
 work correctly:
 
-```
+```bash
 PYTHONPATH=/full/path/to/tuned:/full/path/to/linux-system-roles/kernel_settings/library
 ```
 

@@ -1,9 +1,7 @@
-{% set title = "Contributing to the " ~ inventory_hostname ~ " Linux System Role" %}
+{% set title = "# Contributing to the " ~ inventory_hostname ~ " Linux System Role" %}
 {{ title }}
-{{ "=" * (title | length) }}
 
-Where to start
---------------
+## Where to start
 
 The first place to go is [Contribute](https://linux-system-roles.github.io/contribute.html).
 This has all of the common information that all role developers need:
@@ -24,7 +22,7 @@ are likely to be suitable for new contributors!
 [Pull Requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
 
 {% if 'python_roles' in group_names %}
-### Python Code
+## Python Code
 
 The Python code needs to be **compatible with the Python versions supported by
 the role platform**.

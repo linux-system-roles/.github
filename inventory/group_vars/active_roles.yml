@@ -1,4 +1,9 @@
 present_files:
+  - .github/actions/custom-woke-action/LICENSE
+  - .github/actions/custom-woke-action/README.md
+  - .github/actions/custom-woke-action/action.yml
+  - .github/actions/custom-woke-action/entrypoint.sh
+  - .github/actions/custom-woke-action/testdata/bad.txt
   - .github/dependabot.yml
   - .github/pull_request_template.md
   - .commitlintrc.js
@@ -18,6 +23,7 @@ present_templates:
   - .github/workflows/pr-title-lint.yml
   - .github/workflows/test_converting_readme.yml
   - .github/workflows/weekly_ci.yml
+  - .github/workflows/woke.yml
   - README-ansible.md
 absent_files:
   - .github/workflows/commitlint.yml
