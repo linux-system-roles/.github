@@ -171,8 +171,8 @@
               (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file.path | basename }})\
               {{ ' ' if not loop.last else '' }}\
               {% endfor %}
-              {{ ' ' if present_badges | d() | length > 0 else '' }}\
-              {% for badge in present_badges | d() %}
+              {{ ' ' if present_badges | d([]) | length > 0 else '' }}\
+              {% for badge in present_badges | d([]) %}
               {{ badge }}\
               {{ ' ' if not loop.last else '' }}\
               {% endfor %}\n\n\n---"
