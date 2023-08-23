@@ -32,5 +32,8 @@ jobs:
       - name: Lint all markdown files except for CHANGELOG.md
         uses: docker://avtodev/markdown-lint:master
         with:
-          args: --ignore=CHANGELOG.md **/*.md
+          args: >-
+            {{ markdownlint_args | d() -}}
+            --ignore=CHANGELOG.md
+            **/*.md
           config: .markdownlint.yaml

@@ -20,8 +20,8 @@ are likely to be suitable for new contributors!
 
 **Code** is managed on [Github](https://github.com/linux-system-roles/{{ inventory_hostname }}), using
 [Pull Requests](https://help.github.com/en/github/collaborating-with-issues-and-pull-requests/about-pull-requests).
-
 {% if 'python_roles' in group_names %}
+
 ## Python Code
 
 The Python code needs to be **compatible with the Python versions supported by

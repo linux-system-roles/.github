@@ -1,9 +1,4 @@
 present_files:
-  - .github/actions/custom-woke-action/LICENSE
-  - .github/actions/custom-woke-action/README.md
-  - .github/actions/custom-woke-action/action.yml
-  - .github/actions/custom-woke-action/entrypoint.sh
-  - .github/actions/custom-woke-action/testdata/bad.txt
   - .github/dependabot.yml
   - .github/pull_request_template.md
   - .commitlintrc.js
@@ -25,11 +20,20 @@ present_templates:
   - .github/workflows/weekly_ci.yml
   - .github/workflows/woke.yml
   - README-ansible.md
+
 absent_files:
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
   - README-devel.md
   - README-testing.md
+  - .github/actions/custom-woke-action/LICENSE
+  - .github/actions/custom-woke-action/README.md
+  - .github/actions/custom-woke-action/action.yml
+  - .github/actions/custom-woke-action/entrypoint.sh
+  - .github/actions/custom-woke-action/testdata/bad.txt
+  - .github/actions/custom-woke-action
+  - .github/actions
+
 github_org: linux-system-roles
 github_url_prefix: "https://github.com/"
 default_ansible_lint:
