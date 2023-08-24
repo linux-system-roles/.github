@@ -1,6 +1,5 @@
 
-Debugging network system role
------------------------------
+## Debugging network system role
 
 When using the `nm` provider, NetworkManager create a checkpoint and reverts the
 changes on failures. This makes it hard to debug the error. To disable this, set

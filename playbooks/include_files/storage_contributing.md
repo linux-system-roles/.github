@@ -1,6 +1,5 @@
 
-Storage system role architecture
---------------------------------
+## Storage system role architecture
 
 ### Overview
 
