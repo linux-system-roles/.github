@@ -33,7 +33,6 @@ jobs:
         uses: docker://avtodev/markdown-lint:master
         with:
           args: >-
-            {{ markdownlint_args | d() -}}
             --ignore=CHANGELOG.md
-            **/*.md
+            **/*.md{{ (' ' + markdownlint_args) if markdownlint_args is defined else '' }}
           config: .markdownlint.yaml
