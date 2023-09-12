@@ -22,6 +22,8 @@ all:
       ansible_host: localhost
     experimental-azure-firstboot:
       ansible_host: localhost
+    fapolicyd:
+      ansible_host: localhost
     firewall:
       ansible_host: localhost
     .github:
@@ -104,6 +106,7 @@ all:
         certificate:
         cockpit:
         crypto_policies:
+        fapolicyd:
         firewall:
         ha_cluster:
         journald:
