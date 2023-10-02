@@ -165,10 +165,10 @@
             path: "{{ git_dir }}/README.md"
             regex: \[\!.*
             firstmatch: true
-            line: "{%-for file in find.files -%}\
-              [![{{ file.path | basename }}]\
-              (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file.path | basename }}/badge.svg)]\
-              (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file.path | basename }})\
+            line: "{%-for file in basenames -%}\
+              [![{{ file }}]\
+              (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file }}/badge.svg)]\
+              (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file }})\
               {{- ' ' if not loop.last else '' -}}\
               {% endfor %}
               {{- ' ' if present_badges | d([]) | length > 0 else '' -}}\
@@ -176,6 +176,8 @@
               {{ badge }}\
               {{ ' ' if not loop.last else '' }}\
               {% endfor %}"
+          vars:
+            basenames: "{{ find.files | map(attribute='path') | map('basename') | sort | list }}"
 
         - name: Create git commit, PR
           changed_when: false
