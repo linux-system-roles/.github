@@ -4,6 +4,9 @@ present_files:
   - .commitlintrc.js
   - .markdownlint.yaml
   - .pandoc_template.html5
+  - .ostree/get_ostree_data.sh
+  - .ostree/README.md
+  - README-ostree.md
 present_templates:
   - .ansible-lint
   - .yamllint.yml

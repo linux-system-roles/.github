@@ -1,5 +1,11 @@
 - name: Manage files in system roles repos
-  hosts: active_roles
+  # NOTE: include_roles currently only works with 1 role - need to figure out
+  # how to pass in a list of include roles
+  hosts: active_roles{{
+    include_roles | split(",") | map("regex_replace", "^", ":&") | join("")
+    if include_roles | d(false) else "" }}{{
+    exclude_roles | split(",") | map("regex_replace", "^", ":!") | join("")
+    if exclude_roles | d(false) else "" }}
   connection: local
   gather_facts: false
   vars:
@@ -178,6 +184,22 @@
               {% endfor %}"
           vars:
             basenames: "{{ find.files | map(attribute='path') | map('basename') | sort | list }}"
+
+        - name: Remove get_ostree_data.sh from .sanity files
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euxo pipefail
+              for file in .sanity-*.txt; do
+                if [ -f "$file" ] ; then
+                  sed '/get_ostree_data.sh.*shebang/d' -i "$file"
+                  if [ -s "$file" ]; then
+                    git add "$file"
+                  else
+                    git rm -f "$file"
+                  fi
+                fi
+              done
 
         - name: Create git commit, PR
           changed_when: false

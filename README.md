@@ -147,6 +147,17 @@ anything on github, add `-e lsr_dry_run=true` to the ansible-playbook command.
   git branch that will be used for the PR.  You probably don't want to change
   this unless you have some conflict.
 * `lsr_dry_run` - default `true` - use `false` to actually push and create PRs
+* `test_dir` - default none - if you specify this, the playbook will checkout
+  the role directories under this directory - by default, the playbook will
+  create and remove a tmpdir
+* `exclude_roles` - default none - you can specify a comma-delimited list of
+  roles to exclude from processing.  This is useful when you want to update
+  all roles *except* the given roles.
+* `include_roles` - default none - you can specify a comma-delimited list of
+  roles to include in processing, and all other roles will be excluded.  This
+  is useful when you want to update *only* the given roles, and exclude the
+  rest.  NOTE: `include_roles` currently only works with 1 role at a time.
+  You cannot currently specify a list of roles.
 
 ### Run it
 
@@ -154,13 +165,16 @@ Run it like this:
 
 ```
 ansible-playbook -vv -i inventory -e lsr_dry_run=false \
+  -e update_files_branch=my_update_branch -e exclude_roles=nbde_client \
+  -e test_dir=/var/tmp/lsr \
   -e update_files_commit_file=/path/to/git-commit-msg playbooks/update_files.yml
 ```
 
 ### How it works
 
-* A temp directory is created
-* All of the roles are cloned into that directory
+* A temp directory is created if `test_dir` is not specified
+* All of the roles are cloned into that directory, except for the roles
+  listed in `exclude_roles`
 * Figure out the name of the main branch
 * If the branch `update_files_branch` does not exist, it is
   created from the main branch

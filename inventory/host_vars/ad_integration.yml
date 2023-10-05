@@ -2,6 +2,7 @@ ansible_lint:
   mock_modules:
     - win_domain_group
     - win_domain_user
+    - community.general.ini_file
 github_actions:
   weekly_ci:
     schedule:
