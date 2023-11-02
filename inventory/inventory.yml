@@ -78,9 +78,9 @@ all:
       ansible_host: localhost
     selinux:
       ansible_host: localhost
-    ssh:
-      ansible_host: localhost
     snapshot:
+      ansible_host: localhost
+    ssh:
       ansible_host: localhost
     storage:
       ansible_host: localhost
@@ -127,8 +127,8 @@ all:
         postgresql:
         rhc:
         selinux:
-        ssh:
         snapshot:
+        ssh:
         storage:
         systemd:
         template:
