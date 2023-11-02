@@ -80,6 +80,8 @@ all:
       ansible_host: localhost
     ssh:
       ansible_host: localhost
+    snapshot:
+      ansible_host: localhost
     storage:
       ansible_host: localhost
     systemd:
@@ -126,6 +128,7 @@ all:
         rhc:
         selinux:
         ssh:
+        snapshot:
         storage:
         systemd:
         template:
@@ -142,6 +145,7 @@ all:
         nbde_server:
         network:
         selinux:
+        snapshot:
         storage:
         systemd:
         vpn:
