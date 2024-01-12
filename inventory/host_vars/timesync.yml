@@ -7,6 +7,6 @@ github_actions:
 # ignores
 ansible_lint:
   skip_list:
-    - sanity[cannot-ignore]
+    - sanity[cannot-ignore]  # wokeignore:rule=sanity
   extra_vars:
     targets: target_hosts

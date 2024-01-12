@@ -7,4 +7,4 @@ github_actions:
       - cron: "8 10 * * 3"
 ansible_lint:
   skip_list:
-    - sanity[cannot-ignore]
+    - sanity[cannot-ignore]  # wokeignore:rule=sanity
