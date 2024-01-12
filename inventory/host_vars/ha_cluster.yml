@@ -13,4 +13,4 @@ role_present_templates:
 # to shut up
 ansible_lint:
   skip_list:
-    - sanity[cannot-ignore]
+    - sanity[cannot-ignore]  # wokeignore:rule=sanity
