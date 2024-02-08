@@ -24,7 +24,10 @@ kinds:
 {%   set val = (default_ansible_lint | d({})).get(param, []) + (ansible_lint | d({})).get(param, []) %}
 {%   if val %}
 {{ param }}:
-{{ val | to_nice_yaml(indent=2) | indent(width=2, first=true) -}}
+{%     for item in val %}
+  - {{ item }}{% if item is search("sanity") %}  # wokeignore:rule=sanity{% endif %}
+
+{%     endfor %}
 {%   endif %}
 {% endfor %}
 {# dict valued params #}
