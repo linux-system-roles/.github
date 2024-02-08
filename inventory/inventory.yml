@@ -28,6 +28,8 @@ all:
       ansible_host: localhost
     .github:
       ansible_host: localhost
+    gfs2:
+      ansible_host: localhost
     ha_cluster:
       ansible_host: localhost
     image_builder:
@@ -110,6 +112,7 @@ all:
         crypto_policies:
         fapolicyd:
         firewall:
+        gfs2:
         ha_cluster:
         journald:
         kdump:
@@ -140,6 +143,7 @@ all:
         certificate:
         bootloader:
         firewall:
+        gfs2:
         ha_cluster:
         kernel_settings:
         nbde_client:
