@@ -15,4 +15,4 @@ ansible_lint:
     - performancecopilot.metrics.redis
     - performancecopilot.metrics.repository
     - performancecopilot.metrics.spark
-markdownlint_args: "--ignore=vendor"
+markdownlint_args: "--ignore=vendor --ignore=tests/roles"
