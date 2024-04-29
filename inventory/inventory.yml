@@ -86,6 +86,8 @@ all:
       ansible_host: localhost
     storage:
       ansible_host: localhost
+    sudo:
+      ansible_host: localhost
     systemd:
       ansible_host: localhost
     template:
@@ -133,6 +135,7 @@ all:
         snapshot:
         ssh:
         storage:
+        sudo:
         systemd:
         template:
         timesync:
