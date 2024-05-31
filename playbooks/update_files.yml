@@ -201,6 +201,24 @@
                 fi
               done
 
+        - name: Create ignore file for ansible-test 2.17
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euxo pipefail
+              if [ ! -f .sanity-ansible-ignore-2.17.txt ] && [ -f .sanity-ansible-ignore-2.16.txt ]; then
+                cp .sanity-ansible-ignore-2.16.txt .sanity-ansible-ignore-2.17.txt
+                # 2.17 does not support py27 or py36
+                sed -e '/compile-2.7/d' -e '/compile-3.6/d' -e '/import-2.7/d' -e '/import-3.6/d' -i .sanity-ansible-ignore-2.17.txt
+                # https://docs.ansible.com/ansible-core/2.17/dev_guide/testing/sanity/no-unicode-literals.html
+                sed -e '/no-unicode-literals/d' -i .sanity-ansible-ignore-2.17.txt
+                if [ -s .sanity-ansible-ignore-2.17.txt ]; then
+                  git add .sanity-ansible-ignore-2.17.txt
+                else
+                  rm .sanity-ansible-ignore-2.17.txt
+                fi
+              fi
+
         - name: Create git commit, PR
           changed_when: false
           shell:
