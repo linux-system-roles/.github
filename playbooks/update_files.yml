@@ -65,6 +65,9 @@
             cmd: |
               set -euo pipefail
               cur_br=$(git branch --show-current)
+              if [ "$cur_br" = "{{ __main_br }}" ]; then
+                git pull
+              fi
               if [ "$cur_br" = {{ update_files_branch | quote }} ]; then
                 # assume this is in active development
                 exit 10
@@ -219,12 +222,40 @@
                 fi
               fi
 
+        - name: Create vars, ostree files for el10
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euxo pipefail
+              set -- vars/CentOS_9.yml vars/CentOS_10.yml vars/RedHat_9.yml vars/RedHat_10.yml \
+                vars/CentOS-9.yml vars/CentOS-10.yml vars/RedHat-9.yml vars/RedHat-10.yml \
+                .ostree/packages-runtime-CentOS-9.txt .ostree/packages-runtime-CentOS-10.txt \
+                .ostree/packages-testing-CentOS-9.txt .ostree/packages-testing-CentOS-10.txt \
+                .ostree/packages-runtime-RedHat-9.txt .ostree/packages-runtime-RedHat-10.txt \
+                .ostree/packages-testing-RedHat-9.txt .ostree/packages-testing-RedHat-10.txt
+              while [ "${1:-}" ]; do
+                src="$1"; shift
+                dest="$1"; shift
+                if [ ! -f "$dest" ] && [ -f "$src" ]; then
+                  cp "$src" "$dest"
+                  git add "$dest"
+                fi
+              done
+
+        - name: Add el10 to meta/main.yml
+          script: scripts/update_meta_main.py {{ __meta_main | quote }}
+          args:
+            executable: python3
+          vars:
+            __meta_main: "{{ git_dir }}/meta/main.yml"
+
         - name: Create git commit, PR
           changed_when: false
           shell:
             chdir: "{{ git_dir }}"
             cmd: |
               set -euo pipefail
+              git add meta/main.yml
               for file in {{ __all_present | join(" ") }}; do
                   git add "$file"
               done
