@@ -45,5 +45,5 @@ jobs:
         with:
           testing-type: sanity  # wokeignore:rule=sanity
 {%- raw %}
-          collection-src-directory: .tox/ansible_collections/${{ env.LSR_ROLE2COLL_NAMESPACE }}/${{ env.LSR_ROLE2COLL_NAME }}
+          collection-src-directory: ${{ github.workspace }}/.tox/ansible_collections/${{ env.LSR_ROLE2COLL_NAMESPACE }}/${{ env.LSR_ROLE2COLL_NAME }}
 {%- endraw +%}
