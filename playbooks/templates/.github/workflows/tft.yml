@@ -9,7 +9,9 @@ permissions:
   statuses: write
 # The concurrency key is used to prevent multiple workflows from running at the same time
 concurrency:
-  group: testing-farm-tests
+{%- raw %}
+  # group name contains reponame-pr_num to allow simualteneous runs in different PRs
+  group: testing-farm-${{ github.event.repository.name }}-${{ github.event.issue.number }}
   cancel-in-progress: true
 jobs:
   prepare_vars:
@@ -22,13 +24,13 @@ jobs:
       && (contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association) || contains('systemroller', github.event.comment.user.login))
     runs-on: ubuntu-latest
     outputs:
-{%- raw %}
       supported_platforms: ${{ steps.supported_platforms.outputs.supported_platforms }}
       head_sha: ${{ steps.head_sha.outputs.head_sha }}
       datetime: ${{ steps.datetime.outputs.datetime }}
       memory: ${{ steps.memory.outputs.memory }}
 {%- endraw +%}
     steps:
+
       - name: Checkout repo
         uses: {{ gha_checkout_action }}
 
@@ -123,7 +125,7 @@ jobs:
           sha: ${{ needs.prepare_vars.outputs.head_sha }}
           status: pending
           context: ${{ matrix.platform }}/ansible-${{ matrix.ansible_version }}
-          description: Pending — Test started
+          description: Test started
 
       - name: Set commit status as success with a description that platform is skipped
         if: "!contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)"
@@ -133,6 +135,7 @@ jobs:
           status: success
           context: ${{ matrix.platform }}/ansible-${{ matrix.ansible_version }}
           description: The role does not support this platform. Skipping.
+          targetUrl: ""
 
       - uses: sclorg/testing-farm-as-github-action@v2
         if: contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
@@ -173,4 +176,3 @@ jobs:
           targetUrl: ${{ env.ARTIFACTS_URL }}
           context: ${{ matrix.platform }}/ansible-${{ matrix.ansible_version }}
 {%- endraw +%}
-
