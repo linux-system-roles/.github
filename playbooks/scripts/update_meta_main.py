@@ -2,6 +2,9 @@
 import re
 import sys
 import yaml
+from pathlib import Path
+
+role = Path(sys.argv[1]).parents[1].name
 
 # grab header
 header = []
@@ -47,7 +50,8 @@ for plat in meta_main["galaxy_info"]["platforms"]:
             tags.add(plat_lower + ver.lower())
 
 if not "el10" in tags:
-    tags.add("el10")
+    if role != "mssql":
+        tags.add("el10")
 
 def normalize_key(key):
     ary = [key]
