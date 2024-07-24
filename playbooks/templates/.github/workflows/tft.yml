@@ -55,7 +55,9 @@ jobs:
       - name: Get memory
         id: memory
         run: |
-          memory=$(grep -rPo '    m: \K(.*)' tests/provision.fmf)
+          if [ -d tests/provision.fmf ]; then
+            memory=$(grep -rPo '    m: \K(.*)' tests/provision.fmf)
+          fi
           if [ -n "$memory" ]; then
             echo "memory=$memory" >> $GITHUB_OUTPUT
           else
