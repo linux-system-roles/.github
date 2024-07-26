@@ -2,6 +2,7 @@ present_files:
   - .github/dependabot.yml
   - .github/pull_request_template.md
   - .commitlintrc.js
+  - .fmf/version
   - .markdownlint.yaml
   - .pandoc_template.html5
   - .ostree/get_ostree_data.sh
@@ -20,9 +21,12 @@ present_templates:
   - .github/workflows/markdownlint.yml
   - .github/workflows/pr-title-lint.yml
   - .github/workflows/test_converting_readme.yml
+  - .github/workflows/tft.yml
   - .github/workflows/weekly_ci.yml
   - .github/workflows/woke.yml
   - README-ansible.md
+  - plans/general.fmf
+  - plans/README-plans.md
 absent_files:
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
