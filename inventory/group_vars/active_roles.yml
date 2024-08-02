@@ -22,11 +22,10 @@ present_templates:
   - .github/workflows/pr-title-lint.yml
   - .github/workflows/test_converting_readme.yml
   - .github/workflows/tft.yml
+  - .github/workflows/tft_citest_bad.yml
   - .github/workflows/weekly_ci.yml
   - .github/workflows/woke.yml
   - README-ansible.md
-  - plans/general.fmf
-  - plans/README-plans.md
 absent_files:
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
@@ -39,6 +38,9 @@ absent_files:
   - .github/actions/custom-woke-action/testdata/bad.txt
   - .github/actions/custom-woke-action
   - .github/actions
+  - plans/README-plans.md
+  - plans/general.fmf
+  - plans
 github_org: linux-system-roles
 github_url_prefix: "https://github.com/"
 default_ansible_lint:
