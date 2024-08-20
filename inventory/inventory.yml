@@ -155,6 +155,7 @@ all:
         selinux:
         snapshot:
         storage:
+        sudo:
         systemd:
         vpn:
     shellcheck_roles:
