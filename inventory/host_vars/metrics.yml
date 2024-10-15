@@ -12,7 +12,7 @@ ansible_lint:
     - performancecopilot.metrics.mssql
     - performancecopilot.metrics.pcp
     - performancecopilot.metrics.postfix
-    - performancecopilot.metrics.redis
+    - performancecopilot.metrics.keyserver
     - performancecopilot.metrics.repository
     - performancecopilot.metrics.spark
 markdownlint_args: "--ignore=vendor --ignore=tests/roles"
