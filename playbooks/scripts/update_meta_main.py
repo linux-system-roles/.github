@@ -53,6 +53,13 @@ if not "el10" in tags:
     if role != "mssql":
         tags.add("el10")
 
+# uncomment when all of the roles have full support
+# if not "rocky" in tags:
+#     tags.add("rocky")
+
+# if not "almalinux" in tags:
+#     tags.add("almalinux")
+
 def normalize_key(key):
     ary = [key]
     match = re.match("([a-z]+)([0-9]+)", key)
