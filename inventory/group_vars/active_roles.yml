@@ -26,6 +26,7 @@ present_templates:
   - .github/workflows/weekly_ci.yml
   - .github/workflows/woke.yml
   - README-ansible.md
+  - tests/vars/rh_distros_vars.yml
 absent_files:
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
@@ -60,3 +61,4 @@ lsr_name: linux_system_roles
 lsr_role_namespace: linux_system_roles  # for ansible-lint
 gha_checkout_action: actions/checkout@v4
 tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@3.4.0"
+lsr_rh_distros: "{{ ['AlmaLinux', 'CentOS', 'RedHat', 'Rocky'] + lsr_rh_distros_extra | d([]) }}"

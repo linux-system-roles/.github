@@ -174,7 +174,7 @@
             path: "{{ git_dir }}/README.md"
             regex: \[\!.*
             firstmatch: true
-            line: "{%-for file in basenames -%}\
+            line: "{%- for file in basenames -%}\
               [![{{ file }}]\
               (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file }}/badge.svg)]\
               (https://github.com/linux-system-roles/{{ inventory_hostname }}/actions/workflows/{{ file }})\
@@ -203,6 +203,7 @@
                   fi
                 fi
               done
+          changed_when: true
 
         - name: Create ignore file for ansible-test 2.17
           shell:
@@ -221,6 +222,7 @@
                   rm .sanity-ansible-ignore-2.17.txt
                 fi
               fi
+          changed_when: true
 
         - name: Create vars, ostree files for el10
           shell:
@@ -241,6 +243,7 @@
                   git add "$dest"
                 fi
               done
+          changed_when: true
 
         - name: Add el10 to meta/main.yml
           script: scripts/update_meta_main.py {{ __meta_main | quote }}
@@ -248,6 +251,91 @@
             executable: python3
           vars:
             __meta_main: "{{ git_dir }}/meta/main.yml"
+
+        # NOTE: Due to https://github.com/linux-system-roles/cockpit/issues/130
+        # we cannot automatically create symlinks for OracleLinux
+        - name: Create vars symlinks for CentOS, Rocky, Alma
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euxo pipefail
+              same_vars_files() {
+                python -c 'import sys; import yaml
+              a = yaml.safe_load(open(sys.argv[1]))
+              b = yaml.safe_load(open(sys.argv[2]))
+              rv = 0 if a == b else 1
+              sys.exit(rv)' "$1" "$2"
+              }
+              for dir in vars roles/rsyslog/vars tests/vars; do
+                if [ ! -d "$dir" ]; then continue; fi
+                pushd "$dir"
+                for file in RedHat_*.yml RedHat-*.yml; do
+                  if [[ "$file" =~ ^RedHat([_-])([0-9]+).yml$ ]]; then
+                    sep="${BASH_REMATCH[1]}"
+                    ver="${BASH_REMATCH[2]}"
+                    for clone in CentOS Rocky AlmaLinux; do
+                      clone_file="${clone}${sep}$ver.yml"
+                      if [ "$clone" = Rocky ] || [ "$clone" = AlmaLinux ]; then
+                        if [ "$ver" = 6 ] || [ "$ver" = 7 ]; then
+                          if [ -e "$clone_file" ]; then
+                            git rm -f "$clone_file"  # if there is already a file or link, remove it
+                          fi
+                          continue  # no 6 or 7 for Alma or Rocky
+                        fi
+                      fi
+                      if [ ! -e "$clone_file" ]; then
+                        ln -s "$file" "$clone_file"
+                        git add "$clone_file"
+                      elif [ -f "$clone_file" ] && same_vars_files "$file" "$clone_file"; then
+                        git rm -f "$clone_file"
+                        ln -s "$file" "$clone_file"
+                        git add "$clone_file"
+                      else
+                        echo {{ inventory_hostname }} "$clone_file" exists and is different than "$file"
+                      fi
+                    done
+                  fi
+                done
+                popd
+              done
+          changed_when: true
+
+        - name: See if vars main exists
+          stat:
+            path: "{{ git_dir }}/vars/main.yml"
+          register: __vars_main
+
+        # some roles have no vars/ and use defaults/main.yml instead
+        - name: Add vars block to main
+          ansible.builtin.blockinfile:
+            path: "{{ git_dir ~ '/vars/main.yml' if __vars_main.stat.exists
+              else git_dir ~ '/defaults/main.yml' }}"
+            insertafter: EOF
+            marker: "# {mark} - DO NOT EDIT THIS BLOCK - rh distros variables"
+            prepend_newline: true
+            block: |
+              # Ansible distribution identifiers that the role treats like RHEL
+              __{{ inventory_hostname }}_rh_distros:
+              {{ lsr_rh_distros | sort | to_nice_yaml(indent=2) | indent(width=2, first=true) }}
+              # Same as above but includes Fedora
+              __{{ inventory_hostname }}_rh_distros_fedora: "{{ '{{' }} __{{ inventory_hostname }}_rh_distros + ['Fedora'] {{ '}}' }}"
+
+              # Use this in conditionals to check if distro is Red Hat or clone
+              __{{ inventory_hostname }}_is_rh_distro: "{{ '{{' }} ansible_distribution in __{{ inventory_hostname }}_rh_distros {{ '}}' }}"
+
+              # Use this in conditionals to check if distro is Red Hat or clone, or Fedora
+              __{{ inventory_hostname }}_is_rh_distro_fedora: "{{ '{{' }} ansible_distribution in __{{ inventory_hostname }}_rh_distros_fedora {{ '}}' }}"
+          register: __vars_main_block
+
+        - name: Add to git transaction
+          command:
+            cmd: git add {{ path | quote }}
+            chdir: "{{ git_dir }}"
+          when: __vars_main_block is changed
+          changed_when: true
+          vars:
+            path: "{{ 'vars/main.yml' if __vars_main.stat.exists
+              else 'defaults/main.yml' }}"
 
         - name: Create git commit, PR
           changed_when: false
@@ -271,22 +359,30 @@
                 # nothing to do
                 echo No updates for role {{ inventory_hostname }}
                 exit 0
-              else
-                git commit -s -F {{ update_files_commit_file | quote }}
-                force_flag="{{ __is_new | ternary('', '-f') }}"
-                if [ {{ lsr_dry_run | d('true') }} = false ]; then
-                  git push $force_flag -u origin {{ update_files_branch | quote }}
-                echo
-                  echo git push $force_flag -u origin {{ update_files_branch | quote }}
-                fi
               fi
-              prnum="$(gh pr list -H {{ update_files_branch | quote }} --json number --jq '.[].number')"
+              commit_file={{ update_files_commit_file | quote }}
+              branch={{ update_files_branch | quote }}
+              if [ "{{ __is_new | ternary('true', 'false') }}" = true ]; then
+                git commit -s -F "$commit_file"
+              else
+                # commit orig head, then amend, and ensure commit is signed
+                git commit -C ORIG_HEAD
+                git commit -s --amend -F "$commit_file"
+              fi
+              force_flag="{{ __is_new | ternary('', '-f') }}"
+              if [ {{ lsr_dry_run | d('true') }} = false ]; then
+                git push $force_flag -u origin "$branch"
+              echo
+                echo git push $force_flag -u origin "$branch"
+              fi
+              prnum="$(gh pr list -H "$branch" --json number --jq '.[].number')"
               if [ -z "$prnum" ]; then
+                cmd=(gh pr create --assignee @me --fill --base {{ __main_br | quote }})
                 if [ {{ lsr_dry_run | d('true') }} = false ]; then
                   retries=0
                   backoff=10
                   while [ "$retries" -lt 10 ]; do
-                    if gh pr create --fill --base "{{ __main_br }}"; then
+                    if "${cmd[@]}"; then
                       break
                     else
                       echo backing off "$backoff" seconds . . .
@@ -296,11 +392,14 @@
                     fi
                   done
                 else
-                  echo gh pr create --fill --base "{{ __main_br }}"
+                  echo "${cmd[@]}"
                 fi
               else
                 echo Existing PR "$prnum"
                 echo {{ github_url_prefix ~ github_org ~ '/' ~ inventory_hostname ~ '/pull/' }}$prnum
+                # update PR assignee, title, and body
+                tail -n +3 "$commit_file" | \
+                  gh pr edit "$prnum" -F - --add-assignee @me --title "$(head -1 "$commit_file")"
               fi
       always:
         - name: Clean up temp working dir
