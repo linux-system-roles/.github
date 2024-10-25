@@ -2,6 +2,8 @@ all:
   hosts:
     ad_integration:
       ansible_host: localhost
+    aide:
+      ansible_host: localhost
     auto-maintenance:
       ansible_host: localhost
     bootloader:
@@ -108,6 +110,7 @@ all:
     active_roles:
       hosts:
         ad_integration:
+        aide:
         bootloader:
         certificate:
         cockpit:
