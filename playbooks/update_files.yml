@@ -188,69 +188,25 @@
           vars:
             basenames: "{{ find.files | map(attribute='path') | map('basename') | sort | list }}"
 
-        - name: Remove get_ostree_data.sh from .sanity files
-          shell:
-            chdir: "{{ git_dir }}"
-            cmd: |
-              set -euxo pipefail
-              for file in .sanity-*.txt; do
-                if [ -f "$file" ] ; then
-                  sed '/get_ostree_data.sh.*shebang/d' -i "$file"
-                  if [ -s "$file" ]; then
-                    git add "$file"
-                  else
-                    git rm -f "$file"
-                  fi
-                fi
-              done
-          changed_when: true
-
-        - name: Create ignore file for ansible-test 2.17
-          shell:
-            chdir: "{{ git_dir }}"
-            cmd: |
-              set -euxo pipefail
-              if [ ! -f .sanity-ansible-ignore-2.17.txt ] && [ -f .sanity-ansible-ignore-2.16.txt ]; then
-                cp .sanity-ansible-ignore-2.16.txt .sanity-ansible-ignore-2.17.txt
-                # 2.17 does not support py27 or py36
-                sed -e '/compile-2.7/d' -e '/compile-3.6/d' -e '/import-2.7/d' -e '/import-3.6/d' -i .sanity-ansible-ignore-2.17.txt
-                # https://docs.ansible.com/ansible-core/2.17/dev_guide/testing/sanity/no-unicode-literals.html
-                sed -e '/no-unicode-literals/d' -i .sanity-ansible-ignore-2.17.txt
-                if [ -s .sanity-ansible-ignore-2.17.txt ]; then
-                  git add .sanity-ansible-ignore-2.17.txt
-                else
-                  rm .sanity-ansible-ignore-2.17.txt
-                fi
-              fi
-          changed_when: true
-
-        - name: Create vars, ostree files for el10
-          shell:
-            chdir: "{{ git_dir }}"
-            cmd: |
-              set -euxo pipefail
-              set -- vars/CentOS_9.yml vars/CentOS_10.yml vars/RedHat_9.yml vars/RedHat_10.yml \
-                vars/CentOS-9.yml vars/CentOS-10.yml vars/RedHat-9.yml vars/RedHat-10.yml \
-                .ostree/packages-runtime-CentOS-9.txt .ostree/packages-runtime-CentOS-10.txt \
-                .ostree/packages-testing-CentOS-9.txt .ostree/packages-testing-CentOS-10.txt \
-                .ostree/packages-runtime-RedHat-9.txt .ostree/packages-runtime-RedHat-10.txt \
-                .ostree/packages-testing-RedHat-9.txt .ostree/packages-testing-RedHat-10.txt
-              while [ "${1:-}" ]; do
-                src="$1"; shift
-                dest="$1"; shift
-                if [ ! -f "$dest" ] && [ -f "$src" ]; then
-                  cp "$src" "$dest"
-                  git add "$dest"
-                fi
-              done
-          changed_when: true
-
-        - name: Add el10 to meta/main.yml
-          script: scripts/update_meta_main.py {{ __meta_main | quote }}
-          args:
-            executable: python3
-          vars:
-            __meta_main: "{{ git_dir }}/meta/main.yml"
+        # uncomment and change to 2.18 when 2.18 is released
+        # - name: Create ignore file for ansible-test 2.17
+        #   shell:
+        #     chdir: "{{ git_dir }}"
+        #     cmd: |
+        #       set -euxo pipefail
+        #       if [ ! -f .sanity-ansible-ignore-2.17.txt ] && [ -f .sanity-ansible-ignore-2.16.txt ]; then
+        #         cp .sanity-ansible-ignore-2.16.txt .sanity-ansible-ignore-2.17.txt
+        #         # 2.17 does not support py27 or py36
+        #         sed -e '/compile-2.7/d' -e '/compile-3.6/d' -e '/import-2.7/d' -e '/import-3.6/d' -i .sanity-ansible-ignore-2.17.txt
+        #         # https://docs.ansible.com/ansible-core/2.17/dev_guide/testing/sanity/no-unicode-literals.html
+        #         sed -e '/no-unicode-literals/d' -i .sanity-ansible-ignore-2.17.txt
+        #         if [ -s .sanity-ansible-ignore-2.17.txt ]; then
+        #           git add .sanity-ansible-ignore-2.17.txt
+        #         else
+        #           rm .sanity-ansible-ignore-2.17.txt
+        #         fi
+        #       fi
+        #   changed_when: true
 
         # NOTE: Due to https://github.com/linux-system-roles/cockpit/issues/130
         # we cannot automatically create symlinks for OracleLinux
