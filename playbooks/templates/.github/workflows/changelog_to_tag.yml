@@ -68,8 +68,8 @@ jobs:
           fi
           echo "tagname=$_tagname" >> "$GITHUB_OUTPUT"
           echo "branch=$_branch" >> "$GITHUB_OUTPUT"
-
 {% if inventory_hostname == "mssql" %}
+
       - name: Install dependencies
         run: |
           set -euxo pipefail
@@ -168,15 +168,15 @@ jobs:
 
           echo ::group::Publish Collection to Galaxy
           ansible-galaxy collection publish -vv --token "${{ secrets.GALAXY_API_KEY }}" "$_tarball"
+{% endraw %}
           echo ::endgroup::
           echo ::info Done
-{%- endraw +%}
-{% endif %}
 
-{%- raw %}
+{% endif %}
       - name: Create tag
         uses: mathieudutour/github-tag-action@v6.2
         with:
+{%- raw %}
           github_token: ${{ secrets.GITHUB_TOKEN }}
           custom_tag: ${{ steps.tag.outputs.tagname }}
           tag_prefix: ''
