@@ -8,6 +8,11 @@ profile: production
 {%   endif %}
 {% endfor %}
 kinds:
+{% for item in (ansible_lint | d({})).get('extra_kinds', []) %}
+{%   for key, val in item.items() %}
+  - {{ key }}: "{{ val }}"
+{%   endfor %}
+{% endfor %}
   - yaml: "**/meta/collection-requirements.yml"
   - playbook: "**/tests/get_coverage.yml"
   - yaml: "**/tests/collection-requirements.yml"
