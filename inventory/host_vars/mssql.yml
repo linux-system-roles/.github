@@ -6,5 +6,3 @@ ansible_lint:
   skip_list:
     - galaxy[no-changelog]
     - galaxy[no-runtime]
-  mock_modules:
-    - ansible.windows.win_shell
