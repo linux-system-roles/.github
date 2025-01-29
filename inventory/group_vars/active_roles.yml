@@ -14,7 +14,6 @@ present_templates:
   - contributing.md
   - .github/workflows/ansible-lint.yml
   - .github/workflows/ansible-managed-var-comment.yml
-  - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/ansible-test.yml
   - .github/workflows/build_docs.yml
   - .github/workflows/changelog_to_tag.yml
@@ -28,6 +27,7 @@ present_templates:
   - README-ansible.md
   - tests/vars/rh_distros_vars.yml
 absent_files:
+  - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
   - README-devel.md
