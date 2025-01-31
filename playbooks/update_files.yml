@@ -63,7 +63,8 @@
           shell:
             chdir: "{{ git_dir }}"
             cmd: |
-              set -euo pipefail
+              set -euxo pipefail
+              exec 1>&2
               cur_br=$(git branch --show-current)
               if [ "$cur_br" = "{{ __main_br }}" ]; then
                 git pull
@@ -73,7 +74,7 @@
                 exit 10
               elif git checkout {{ update_files_branch | quote }} > /dev/null 2>&1; then
                 git rebase "{{ __main_br }}"
-                git reset --soft HEAD^
+                git reset --soft "{{ __main_br }}"
                 exit 10
               else
                 git checkout -b {{ update_files_branch | quote }}
@@ -318,13 +319,7 @@
               fi
               commit_file={{ update_files_commit_file | quote }}
               branch={{ update_files_branch | quote }}
-              if [ "{{ __is_new | ternary('true', 'false') }}" = true ]; then
-                git commit -s -F "$commit_file"
-              else
-                # commit orig head, then amend, and ensure commit is signed
-                git commit -C ORIG_HEAD
-                git commit -s --amend -F "$commit_file"
-              fi
+              git commit -s -F "$commit_file"
               force_flag="{{ __is_new | ternary('', '-f') }}"
               if [ {{ lsr_dry_run | d('true') }} = false ]; then
                 git push $force_flag -u origin "$branch"
