@@ -190,7 +190,7 @@ jobs:
 {%- endraw +%}
 {%- if inventory_hostname == "network" %}
 {%- raw %}
-          tmt_hardware: '{ "memory": ">= ${{ needs.prepare_vars.outputs.memory }} MB", "network": [{"type": "eth"},{"type": "eth"}]'
+          tmt_hardware: '{ "memory": ">= ${{ needs.prepare_vars.outputs.memory }} MB", "network": [{"type": "eth"},{"type": "eth"}] }'
 {%- endraw +%}
 {% else %}
 {%- raw %}
