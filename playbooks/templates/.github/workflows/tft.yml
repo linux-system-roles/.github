@@ -187,8 +187,16 @@ jobs:
           tf_scope: private
           api_key: ${{ secrets.TF_API_KEY_RH }}
           update_pull_request_status: false
+{%- endraw +%}
+{%- if inventory_hostname == "network" %}
+{%- raw %}
+          tmt_hardware: '{ "memory": ">= ${{ needs.prepare_vars.outputs.memory }} MB", "network": [{"type": "eth"},{"type": "eth"}]'
+{%- endraw +%}
+{% else %}
+{%- raw %}
           tmt_hardware: '{ "memory": ">= ${{ needs.prepare_vars.outputs.memory }} MB" }'
 {%- endraw +%}
+{%- endif %}
           tmt_plan_filter: "tag:general,{{ inventory_hostname }}"
 
       - name: Set final commit status
