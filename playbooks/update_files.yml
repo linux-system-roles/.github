@@ -54,6 +54,14 @@
           when: git_dir is not exists
           changed_when: false
 
+        - name: Get number of test playbooks
+          shell: ls {{ git_dir }}/tests/tests_*.yml | wc -l
+          register: test_playbooks_count
+
+        - name: Set managed_nodes_count
+          set_fact:
+            managed_nodes_count: "{{ ((test_playbooks_count.stdout | int) / 10 + 1) | int }}"
+
         - name: Set main branch var
           set_fact:
             __main_br: main

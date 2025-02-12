@@ -27,6 +27,8 @@ present_templates:
   - .github/workflows/weekly_ci.yml
   - .github/workflows/woke.yml
   - README-ansible.md
+  - plans/README-plans.md
+  - plans/test_playbooks_parallel.fmf
   - tests/vars/rh_distros_vars.yml
 absent_files:
   - .github/workflows/ansible-plugin-scan.yml
@@ -41,9 +43,6 @@ absent_files:
   - .github/actions/custom-woke-action/testdata/bad.txt
   - .github/actions/custom-woke-action
   - .github/actions
-  - plans/README-plans.md
-  - plans/general.fmf
-  - plans
 github_org: linux-system-roles
 github_url_prefix: "https://github.com/"
 default_ansible_lint:

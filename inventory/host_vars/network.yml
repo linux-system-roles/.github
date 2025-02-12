@@ -21,3 +21,7 @@ lsr_rh_distros_extra: [OracleLinux]
 codespell_skip:
   - ./tests/files/client.key.nocrypt
   - ./tests/files/client.pem
+tmt_hardware:
+  network:
+    - type: eth
+    - type: eth

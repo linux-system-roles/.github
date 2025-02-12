@@ -6,3 +6,5 @@ ansible_lint:
   skip_list:
     - galaxy[no-changelog]
     - galaxy[no-runtime]
+tmt_hardware:
+  memory: ">= 4096 MB"
