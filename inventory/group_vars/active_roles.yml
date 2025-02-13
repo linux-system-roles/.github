@@ -10,6 +10,7 @@ present_files:
   - README-ostree.md
 present_templates:
   - .ansible-lint
+  - .codespellrc
   - .yamllint.yml
   - contributing.md
   - .github/workflows/ansible-lint.yml
@@ -17,6 +18,7 @@ present_templates:
   - .github/workflows/ansible-test.yml
   - .github/workflows/build_docs.yml
   - .github/workflows/changelog_to_tag.yml
+  - .github/workflows/codespell.yml
   - .github/workflows/markdownlint.yml
   - .github/workflows/pr-title-lint.yml
   - .github/workflows/test_converting_readme.yml

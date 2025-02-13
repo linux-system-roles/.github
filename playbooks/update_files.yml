@@ -139,6 +139,20 @@
           loop: "{{ present_files + __present_python_files +
             __present_shellcheck_files }}"
 
+        - name: Process files to be removed
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euo pipefail
+              if [ ! -f {{ item }} ]; then
+                echo WARNING: file to be deleted was not found: {{ item }}
+              else
+                git rm -f {{ item }}
+              fi
+          register: git_rm
+          changed_when: "'rm ' in git_rm.stdout"
+          loop: "{{ __all_absent }}"
+
         # NOTE: Some of the templates are github action definitions
         # which use ${{ var }} - you may have to put {%- raw %}
         # {%- endraw +%} blocks around them.
@@ -294,6 +308,19 @@
             path: "{{ 'vars/main.yml' if __vars_main.stat.exists
               else 'defaults/main.yml' }}"
 
+        - name: Create an empty .codespell_ignores file if it doesn't exist
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euo pipefail
+              if [ ! -f .codespell_ignores ]; then
+                touch .codespell_ignores
+                git add .codespell_ignores
+                echo Success
+               fi
+          register: codespell_ignores
+          changed_when: "'Success' in codespell_ignores.stdout"
+
         - name: Create git commit, PR
           changed_when: false
           shell:
@@ -305,13 +332,6 @@
                   git add "$file"
               done
               git add README.md
-              for file in {{ __all_absent | join(" ") }}; do
-                  if [ ! -f "$file" ]; then
-                    echo WARNING: file to be deleted was not found: "$file"
-                  else
-                    git rm -f "$file"
-                  fi
-              done
               if git diff --cached --quiet; then
                 # nothing to do
                 echo No updates for role {{ inventory_hostname }}
