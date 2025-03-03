@@ -60,7 +60,10 @@
 
         - name: Set managed_nodes_count
           set_fact:
-            managed_nodes_count: "{{ ((test_playbooks_count.stdout | int) / 10 + 1) | int }}"
+            # The formula to calculate the number of required nodes to run x number of test playbooks:
+            # x / 10 + 1
+            # And +0.5 to round the result
+            managed_nodes_count: "{{ ((test_playbooks_count.stdout | int) / 10 + 1 + 0.5) | int }}"
 
         - name: Set main branch var
           set_fact:

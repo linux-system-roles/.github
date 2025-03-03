@@ -21,7 +21,7 @@ This workflow uses Testing Farm's Github Action [Schedule tests on Testing Farm]
 
 ## Running Tests
 
-You can run tests locally with the `tmt try` cli or remotely in Testing Far.
+You can run tests locally with the `tmt try` cli or remotely in Testing Farm.
 
 ### Running Tests Locally
 
@@ -32,7 +32,7 @@ You can run tests locally with the `tmt try` cli or remotely in Testing Far.
     2. Optionally modify environment variables to, e.g. run only specified test playbooks by modifying `SYSTEM_ROLES_ONLY_TESTS`.
 4. Enter `tmt try -p plans/test_playbooks_parallel <platform>`.
     This command identifies the `plans/test_playbooks_parallel.fmf` plan and provisions local VMs, a control node and a managed node.
-5. tmt try is in development and does not identify tests from URL automatically, so after provisioning the machines, you must type `t`, `p`, `t` from the interactive prompt to identify tests, run preparation steps, and run the tests.
+5. `tmt try` is in development and does not identify tests from URL automatically, so after provisioning the machines, you must type `t`, `p`, `t` from the interactive prompt to identify tests, run preparation steps, and run the tests.
 
 ### Running in Testing Farm
 
