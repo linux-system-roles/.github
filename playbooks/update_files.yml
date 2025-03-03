@@ -60,7 +60,7 @@
 
         - name: Set managed_nodes_count
           set_fact:
-            managed_nodes_count: "{{ ((test_playbooks_count.stdout | int) / 10 + 1) | int }}"
+            managed_nodes_count: "{{ ((test_playbooks_count.stdout | int) / 10 + 1) | round | int }}"
 
         - name: Set main branch var
           set_fact:
