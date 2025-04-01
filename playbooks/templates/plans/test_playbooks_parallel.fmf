@@ -5,14 +5,9 @@ provision:
   # Hence there is no need to define `how` explicitly.
   - name: control-node1
     role: control_node
-    # `connection: system` is required for `how: virtual` to assign VMs a real
-    # IP making SSH configuration easier.
-    # This setting is ignored in `artemis`, so we can leave it as is.
-    connection: system
 {% for node_num in range(managed_nodes_count | int) %}
   - name: managed-node{{ node_num + 1 }}
     role: managed_node
-    connection: system
 {% if tmt_hardware is defined %}
     hardware:
 {# regex_replace is a workaround for https://github.com/yaml/pyyaml/issues/234 #}
