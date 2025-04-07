@@ -21,6 +21,7 @@ present_templates:
   - .github/workflows/codespell.yml
   - .github/workflows/markdownlint.yml
   - .github/workflows/pr-title-lint.yml
+  - .github/workflows/qemu-kvm-integration-tests.yml
   - .github/workflows/test_converting_readme.yml
   - .github/workflows/tft.yml
   - .github/workflows/tft_citest_bad.yml

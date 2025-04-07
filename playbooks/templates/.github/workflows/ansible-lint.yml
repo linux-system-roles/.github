@@ -83,4 +83,6 @@ jobs:
 {%- raw %}
           working_directory: ${{ github.workspace }}/.tox/ansible_collections/${{ env.LSR_ROLE2COLL_NAMESPACE }}/${{ env.LSR_ROLE2COLL_NAME }}
           requirements_file: ${{ steps.collection.outputs.coll_req_file }}
+        env:
+          ANSIBLE_COLLECTIONS_PATH: ${{ github.workspace }}/.tox
 {%- endraw +%}
