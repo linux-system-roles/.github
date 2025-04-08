@@ -21,8 +21,6 @@ jobs:
         pyver_os:
           - ver: "2.7"
             os: ubuntu-22.04
-          - ver: "3.8"
-            os: ubuntu-latest
           - ver: "3.9"
             os: ubuntu-latest
           - ver: "3.10"
