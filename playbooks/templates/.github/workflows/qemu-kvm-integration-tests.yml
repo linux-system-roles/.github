@@ -117,7 +117,9 @@ jobs:
         if: failure()
         uses: actions/upload-artifact@v4
         with:
+{%- raw %}
           name: "logs-${{ matrix.scenario.image }}-${{ matrix.scenario.env }}"
+{%- endraw +%}
           path: |
             tests/*.log
             artifacts/default_provisioners.log
