@@ -133,7 +133,7 @@ jobs:
         run: |
           set -euo pipefail
           for f in tests/*.log; do
-              if FAIL=$(grep -B100 -A30 "fatal:" "$f"); then
+              if FAIL=$(grep -E -B100 -A30 "fatal:|An exception occurred" "$f"); then
                   echo "::group::$(basename $f)"
                   echo "$FAIL"
                   echo "::endgroup::"
