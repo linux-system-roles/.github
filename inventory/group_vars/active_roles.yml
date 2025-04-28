@@ -62,5 +62,5 @@ lsr_namespace: fedora
 lsr_name: linux_system_roles
 lsr_role_namespace: linux_system_roles  # for ansible-lint
 gha_checkout_action: actions/checkout@v4
-tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@3.7.0"
+tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@3.7.1"
 lsr_rh_distros: "{{ ['AlmaLinux', 'CentOS', 'RedHat', 'Rocky'] + lsr_rh_distros_extra | d([]) }}"
