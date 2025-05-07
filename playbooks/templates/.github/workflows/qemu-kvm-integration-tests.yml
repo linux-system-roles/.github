@@ -71,13 +71,17 @@ jobs:
           fi
 
           # bootc build support (in buildah) has a separate flag
+{%- raw %}
           if [ "${{ matrix.scenario.image }}" != "$image" ]; then
-            if ! yq -e '.galaxy_info.galaxy_tags[] | select(. == "containerbuild")' meta/main.yml; then
+{%- endraw +%}
+          if ! yq -e '.galaxy_info.galaxy_tags[] | select(. == "containerbuild")' meta/main.yml; then
               supported=
             fi
           else
             # roles need to opt into support for running in a system container
+{%- raw %}
             env="${{ matrix.scenario.env }}"
+{%- endraw +%}
             if [ "${env#container}" != "$env" ] &&
               ! yq -e '.galaxy_info.galaxy_tags[] | select(. == "container")' meta/main.yml; then
               supported=
