@@ -97,14 +97,8 @@ jobs:
       - name: Upload README.html as an artifact
         uses: actions/upload-artifact@master
         with:
-          name: ${{ env.RELEASE_VERSION }}/README.html
-          path: README.html
-
-      - name: Upload index.html as an artifact
-        uses: actions/upload-artifact@master
-        with:
-          name: docs/index.html
-          path: index.html
+          name: README.html
+          path: ${{ env.RELEASE_VERSION }}/README.html
 
       - name: Commit changes
         run: |
