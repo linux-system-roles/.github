@@ -319,7 +319,7 @@
             path: "{{ 'vars/main.yml' if __vars_main.stat.exists
               else 'defaults/main.yml' }}"
 
-        - name: Create an empty .codespell_ignores file if it doesn't exist
+        - name: Manage .codespell_ignores
           shell:
             chdir: "{{ git_dir }}"
             cmd: |
@@ -328,7 +328,12 @@
                 touch .codespell_ignores
                 git add .codespell_ignores
                 echo Success
-               fi
+              fi
+              if ! grep -q -x passt .codespell_ignores; then
+                echo passt >> .codespell_ignores
+                git add .codespell_ignores
+                echo Success
+              fi
           register: codespell_ignores
           changed_when: "'Success' in codespell_ignores.stdout"
 
