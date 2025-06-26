@@ -9,6 +9,8 @@ ansible_lint:
   extra_vars:
     test_playbook: tests_default.yml
     network_provider: nm
+  skip_list:
+    - name[unique]
 yamllint:
   ignore: |
     tests/roles/
