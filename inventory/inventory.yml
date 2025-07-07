@@ -34,6 +34,8 @@ all:
       ansible_host: localhost
     ha_cluster:
       ansible_host: localhost
+    hpc:
+      ansible_host: localhost
     image_builder:
       ansible_host: localhost
     journald:
@@ -119,6 +121,7 @@ all:
         firewall:
         gfs2:
         ha_cluster:
+        hpc:
         journald:
         kdump:
         kernel_settings:
