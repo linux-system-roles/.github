@@ -6,8 +6,6 @@ github_actions:
     schedule:
       - cron: "37 4 * * 4"
 ansible_lint:
-  skip_list:
-    - name[unique]
   mock_modules:
     - seboolean
     - selinux
