@@ -8,3 +8,7 @@ github_actions:
   codeql:
     schedule:
       - cron: "48 9 * * 6"
+tmt_hardware:
+  network:
+    - type: eth
+    - type: eth

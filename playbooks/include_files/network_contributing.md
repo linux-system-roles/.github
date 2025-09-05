@@ -66,3 +66,4 @@ explanation about the NetworkManager API.
     podman stop lsr-ci-c7
     podman rm lsr-ci-c7
     ```
+
