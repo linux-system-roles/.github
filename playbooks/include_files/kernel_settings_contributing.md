@@ -1,4 +1,3 @@
-
 ## Testing kernel_settings modules
 
 It is recommended to use `tox` to set up your `virtualenv` for
