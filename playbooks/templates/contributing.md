@@ -53,7 +53,11 @@ to use a non-system python on the managed node, so it is a good idea to ensure
 your code has broad python version compatibility, and do not assume your code
 will only ever be run with the default system python.
 {% endif %}
-{% include role_specific_contributing | d('not found') ignore missing %}
+{% if role_specific_contributing is defined %}
+
+{% include role_specific_contributing %}
+
+{% endif %}
 
 ## Running CI Tests Locally
 

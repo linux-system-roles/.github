@@ -1,4 +1,3 @@
-
 ## Developer documentation for ssh system role
 
 ### Internal role variables

@@ -1,4 +1,3 @@
-
 ## Storage system role architecture
 
 ### Overview
