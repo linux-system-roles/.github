@@ -5,3 +5,5 @@ github_actions:
 ansible_lint:
   exclude_paths:
     - tests/files/
+  skip_list:
+    - sanity[cannot-ignore]  # wokeignore:rule=sanity
