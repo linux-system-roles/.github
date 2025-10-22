@@ -1,6 +1,8 @@
 ansible_lint:
   extra_vars:
     targets: targets
+  skip_list:
+    - sanity[cannot-ignore]  # wokeignore:rule=sanity
 github_actions:
   weekly_ci:
     schedule:
