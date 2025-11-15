@@ -6,3 +6,6 @@ github_actions:
     schedule:
       - cron: "10 1 * * 4"
 role_specific_contributing: include_files/kernel_settings_contributing.md
+runtime_collection_requirements:
+  - name: ansible.posix
+test_collection_requirements: []

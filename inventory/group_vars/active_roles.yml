@@ -63,4 +63,14 @@ lsr_name: linux_system_roles
 lsr_role_namespace: linux_system_roles  # for ansible-lint
 gha_checkout_action: actions/checkout@v5
 tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@3.14.0"
+# These are the supported RHEL-alike distros - note that at the time of writing,
+# OracleLinux has some problems with some roles, so we don't include it here
+# Roles that do support OracleLinux can list it in lsr_rh_distros_extra
 lsr_rh_distros: "{{ ['AlmaLinux', 'CentOS', 'RedHat', 'Rocky'] + lsr_rh_distros_extra | d([]) }}"
+# the lower bound is an older version, but I don't want to restrict the ability of a user
+# of a particular role to use an old version, rather than forcing them to use 11.x or later
+# Some roles like rhc explicitly require 6.6.0 or later - I think this is a reasonable
+# lower bound for all roles
+# If a role needs a different version, the role can define its own community_general_version
+# in the role's host_vars file
+community_general_version: ">=6.6.0,<12.0.0"

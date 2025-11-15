@@ -2,3 +2,5 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 15 * * 6"
+runtime_collection_requirements: []
+test_collection_requirements: []

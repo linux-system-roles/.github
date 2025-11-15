@@ -8,3 +8,8 @@ ansible_lint:
     - galaxy[no-runtime]
 tmt_hardware:
   memory: ">= 4096 MB"
+runtime_collection_requirements:
+  - name: fedora.linux_system_roles
+test_collection_requirements:
+  - name: ansible.windows
+  - name: fedora.linux_system_roles

@@ -309,7 +309,7 @@
               __{{ inventory_hostname }}_is_rh_distro_fedora: "{{ '{{' }} ansible_distribution in __{{ inventory_hostname }}_rh_distros_fedora {{ '}}' }}"
           register: __vars_main_block
 
-        - name: Add to git transaction
+        - name: Add vars files with changes to git transaction
           command:
             cmd: git add {{ path | quote }}
             chdir: "{{ git_dir }}"
@@ -336,6 +336,9 @@
               fi
           register: codespell_ignores
           changed_when: "'Success' in codespell_ignores.stdout"
+
+        - name: Manage collection-requirements.yml files
+          include_tasks: tasks/manage_collection_requirements.yml
 
         - name: Create git commit, PR
           changed_when: false
