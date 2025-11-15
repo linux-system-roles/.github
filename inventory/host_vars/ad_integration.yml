@@ -6,3 +6,11 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 12 * * 6"
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: community.general
+    version: "{{ community_general_version }}"
+test_collection_requirements:
+  - name: ansible.windows
+  - name: community.windows
+  - name: microsoft.ad

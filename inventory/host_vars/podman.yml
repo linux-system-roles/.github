@@ -7,3 +7,10 @@ ansible_lint:
     - tests/files/
   skip_list:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: containers.podman
+  - name: fedora.linux_system_roles
+test_collection_requirements:
+  - name: containers.podman
+  - name: fedora.linux_system_roles

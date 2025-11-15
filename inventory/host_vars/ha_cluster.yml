@@ -14,3 +14,10 @@ role_present_templates:
 ansible_lint:
   skip_list:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: community.general
+    version: "{{ community_general_version }}"
+  - name: fedora.linux_system_roles
+test_collection_requirements:
+  - name: fedora.linux_system_roles

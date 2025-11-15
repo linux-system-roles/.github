@@ -5,3 +5,6 @@ github_actions:
   codeql:
     schedule:
       - cron: "24 13 * * 2"
+runtime_collection_requirements: []
+test_collection_requirements:
+  - name: fedora.linux_system_roles

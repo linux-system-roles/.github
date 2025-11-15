@@ -7,3 +7,6 @@ github_actions:
       - cron: "20 17 * * 4"
 tmt_hardware:
   memory: ">= 4096 MB"
+runtime_collection_requirements:
+  - name: ansible.posix
+test_collection_requirements: []

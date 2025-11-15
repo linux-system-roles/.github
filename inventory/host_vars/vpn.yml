@@ -8,3 +8,7 @@ github_actions:
 ansible_lint:
   skip_list:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: fedora.linux_system_roles
+test_collection_requirements: []

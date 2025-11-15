@@ -18,3 +18,7 @@ ansible_lint:
 markdownlint_args: "--ignore=vendor --ignore=tests/roles"
 codespell_skip:
   - vendor
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: fedora.linux_system_roles
+test_collection_requirements: []

@@ -5,3 +5,7 @@ github_actions:
 ansible_lint:
   extra_kinds:
     - tasks: "**/tasks/*.yml"
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: fedora.linux_system_roles
+test_collection_requirements: []

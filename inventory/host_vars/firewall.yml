@@ -14,3 +14,6 @@ tmt_hardware:
   network:
     - type: eth
     - type: eth
+runtime_collection_requirements:
+  - name: ansible.posix
+test_collection_requirements: []

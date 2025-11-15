@@ -10,3 +10,6 @@ ansible_lint:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
   extra_vars:
     targets: target_hosts
+runtime_collection_requirements:
+  - name: ansible.posix
+test_collection_requirements: []
