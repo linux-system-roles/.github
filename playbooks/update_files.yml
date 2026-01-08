@@ -303,10 +303,10 @@
               __{{ inventory_hostname }}_rh_distros_fedora: "{{ '{{' }} __{{ inventory_hostname }}_rh_distros + ['Fedora'] {{ '}}' }}"
 
               # Use this in conditionals to check if distro is Red Hat or clone
-              __{{ inventory_hostname }}_is_rh_distro: "{{ '{{' }} ansible_distribution in __{{ inventory_hostname }}_rh_distros {{ '}}' }}"
+              __{{ inventory_hostname }}_is_rh_distro: "{{ '{{' }} ansible_facts['distribution'] in __{{ inventory_hostname }}_rh_distros {{ '}}' }}"
 
               # Use this in conditionals to check if distro is Red Hat or clone, or Fedora
-              __{{ inventory_hostname }}_is_rh_distro_fedora: "{{ '{{' }} ansible_distribution in __{{ inventory_hostname }}_rh_distros_fedora {{ '}}' }}"
+              __{{ inventory_hostname }}_is_rh_distro_fedora: "{{ '{{' }} ansible_facts['distribution'] in __{{ inventory_hostname }}_rh_distros_fedora {{ '}}' }}"
           register: __vars_main_block
 
         - name: Add vars files with changes to git transaction
