@@ -16,6 +16,8 @@ all:
       ansible_host: localhost
     crypto_policies:
       ansible_host: localhost
+    cvm_deploy:
+      ansible_host: localhost
     ee_linux_automation:
       ansible_host: localhost
     ee_linux_system_roles:
@@ -117,6 +119,7 @@ all:
         certificate:
         cockpit:
         crypto_policies:
+        cvm_deploy:
         fapolicyd:
         firewall:
         gfs2:
