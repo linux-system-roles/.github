@@ -18,6 +18,9 @@ permissions:
   contents: read
 jobs:
   ansible_lint:
+    if: |
+      !((github.event_name == 'pull_request' && contains(github.event.pull_request.title, '[citest_skip]')) ||
+        (github.event_name == 'push' && contains(github.event.head_commit.message, '[citest_skip]')))
     runs-on: ubuntu-latest
     steps:
       - name: Update pip, git
@@ -78,7 +81,7 @@ jobs:
           echo "coll_req_file=$coll_req_file" >> $GITHUB_OUTPUT
 
       - name: Run ansible-lint
-        uses: ansible/ansible-lint@v25
+        uses: ansible/ansible-lint@v26
         with:
 {%- raw %}
           working_directory: ${{ github.workspace }}/.tox/ansible_collections/${{ env.LSR_ROLE2COLL_NAMESPACE }}/${{ env.LSR_ROLE2COLL_NAME }}
