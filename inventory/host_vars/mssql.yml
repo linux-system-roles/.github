@@ -2,10 +2,6 @@ github_actions:
   weekly_ci:
     schedule:
       - cron: "0 0 * * 6"
-ansible_lint:
-  skip_list:
-    - galaxy[no-changelog]
-    - galaxy[no-runtime]
 tmt_hardware:
   memory: ">= 4096 MB"
 runtime_collection_requirements:
