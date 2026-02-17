@@ -5,4 +5,6 @@ github_actions:
 role_specific_contributing: include_files/ssh_contributing.md
 runtime_collection_requirements:
   - name: ansible.posix
+  - name: community.general
+    version: "{{ community_general_version }}"
 test_collection_requirements: []
