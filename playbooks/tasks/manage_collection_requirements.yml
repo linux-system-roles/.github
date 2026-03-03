@@ -10,11 +10,13 @@
     mode: "0644"
   register: meta_collection_requirements_file
 
+# noqa command-instead-of-module
 - name: Add meta/collection-requirements.yml to git if changed
   command:
     cmd: git add meta/collection-requirements.yml
     chdir: "{{ git_dir }}"
-  when: meta_collection_requirements_file is changed
+  changed_when: true
+  when: meta_collection_requirements_file is changed  # noqa no-handler
 
 - name: Write tests/collection-requirements.yml
   when: test_collection_requirements | d([]) | length > 0
@@ -28,8 +30,10 @@
     mode: "0644"
   register: tests_collection_requirements_file
 
+# noqa command-instead-of-module
 - name: Add tests/collection-requirements.yml to git if changed
   command:
     cmd: git add tests/collection-requirements.yml
     chdir: "{{ git_dir }}"
-  when: tests_collection_requirements_file is changed
+  changed_when: true
+  when: tests_collection_requirements_file is changed  # noqa no-handler

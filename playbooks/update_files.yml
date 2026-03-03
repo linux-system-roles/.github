@@ -55,7 +55,8 @@
           changed_when: false
 
         - name: Get number of test playbooks
-          shell: ls {{ git_dir }}/tests/tests_*.yml | wc -l
+          shell: set -euo pipefail; ls {{ git_dir }}/tests/tests_*.yml | wc -l
+          changed_when: false
           register: test_playbooks_count
 
         - name: Set managed_nodes_count
@@ -141,6 +142,7 @@
             mode: "0755"
           loop: "{{ __all_present | map('dirname') | unique }}"
           when: item | length > 0
+          changed_when: false
 
         - name: Process files to be added or updated
           copy:
@@ -149,6 +151,7 @@
             mode: preserve
           loop: "{{ present_files + __present_python_files +
             __present_shellcheck_files }}"
+          changed_when: false
 
         - name: Process files to be removed
           shell:
@@ -160,8 +163,7 @@
               else
                 git rm -f {{ item }}
               fi
-          register: git_rm
-          changed_when: "'rm ' in git_rm.stdout"
+          changed_when: false
           loop: "{{ __all_absent }}"
 
         # NOTE: Some of the templates are github action definitions
@@ -180,6 +182,7 @@
           loop: "{{ ([''] | product(present_templates +
             __present_python_templates + __present_shellcheck_templates)) +
             ([__role_template_dir] | product(__role_present_templates)) }}"
+          changed_when: false
 
         - name: Find workflows to create badges for
           find:
@@ -213,6 +216,7 @@
               {% endfor %}"
           vars:
             basenames: "{{ find.files | map(attribute='path') | map('basename') | sort | list }}"
+          changed_when: false
 
         # uncomment and change to 2.18 when 2.18 is released
         # - name: Create ignore file for ansible-test 2.17
@@ -280,7 +284,8 @@
                 done
                 popd
               done
-          changed_when: true
+          register: create_vars_symlinks
+          changed_when: false
 
         - name: See if vars main exists
           stat:
@@ -308,13 +313,14 @@
               # Use this in conditionals to check if distro is Red Hat or clone, or Fedora
               __{{ inventory_hostname }}_is_rh_distro_fedora: "{{ '{{' }} ansible_facts['distribution'] in __{{ inventory_hostname }}_rh_distros_fedora {{ '}}' }}"
           register: __vars_main_block
+          changed_when: false
 
         - name: Add vars files with changes to git transaction
           command:
             cmd: git add {{ path | quote }}
             chdir: "{{ git_dir }}"
           when: __vars_main_block is changed
-          changed_when: true
+          changed_when: false
           vars:
             path: "{{ 'vars/main.yml' if __vars_main.stat.exists
               else 'defaults/main.yml' }}"
@@ -335,13 +341,12 @@
                 echo Success
               fi
           register: codespell_ignores
-          changed_when: "'Success' in codespell_ignores.stdout"
+          changed_when: false
 
         - name: Manage collection-requirements.yml files
           include_tasks: tasks/manage_collection_requirements.yml
 
         - name: Create git commit, PR
-          changed_when: false
           shell:
             chdir: "{{ git_dir }}"
             cmd: |
@@ -356,6 +361,7 @@
                 echo No updates for role {{ inventory_hostname }}
                 exit 0
               fi
+              echo CHANGED
               commit_file={{ update_files_commit_file | quote }}
               branch={{ update_files_branch | quote }}
               git commit -s -F "$commit_file"
@@ -391,6 +397,8 @@
                 tail -n +3 "$commit_file" | \
                   gh pr edit "$prnum" -F - --add-assignee @me --title "$(head -1 "$commit_file")"
               fi
+          register: create_pr
+          changed_when: "'CHANGED' in create_pr.stdout"
       always:
         - name: Clean up temp working dir
           file:
