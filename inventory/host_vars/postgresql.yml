@@ -8,4 +8,6 @@ ansible_lint:
 runtime_collection_requirements:
   - name: ansible.posix
   - name: fedora.linux_system_roles
+  - name: community.general
+    version: "{{ community_general_version }}"
 test_collection_requirements: []
