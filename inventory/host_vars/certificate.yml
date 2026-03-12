@@ -9,4 +9,6 @@ tmt_hardware:
   memory: ">= 4096 MB"
 runtime_collection_requirements:
   - name: ansible.posix
+  - name: community.general
+    version: "{{ community_general_version }}"
 test_collection_requirements: []
