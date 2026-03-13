@@ -79,7 +79,7 @@ jobs:
 {%- raw %}
           if [ "${{ matrix.scenario.image }}" != "$image" ]; then
 {%- endraw +%}
-          if ! yq -e '.galaxy_info.galaxy_tags[] | select(. == "containerbuild")' meta/main.yml; then
+            if ! yq -e '.galaxy_info.galaxy_tags[] | select(. == "containerbuild")' meta/main.yml; then
               supported=
             fi
           else
@@ -187,7 +187,6 @@ jobs:
           rc=0
           # we cannot skip these on the first test
           export SKIP_REQUIREMENTS=false
-          export SKIP_CALLBACK_PLUGINS=false
           for t in tests/tests_*.yml; do
               if tox -e ${{ matrix.scenario.env }} -- --image-name ${{ matrix.scenario.image }} $t > ${t}.log 2>&1; then
                   echo "PASS: $(basename $t)"
@@ -199,7 +198,6 @@ jobs:
               fi
               # we can skip these on subsequent runs
               export SKIP_REQUIREMENTS=true
-              export SKIP_CALLBACK_PLUGINS=true
           done
           exit $rc
 {%- endraw +%}
