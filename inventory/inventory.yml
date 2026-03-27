@@ -104,9 +104,9 @@ all:
       ansible_host: localhost
     tox-lsr:
       ansible_host: localhost
-    trustee_attestation_client:
+    trustee_client:
       ansible_host: localhost
-    trustee_attestation_server:
+    trustee_server:
       ansible_host: localhost
     tuned:
       ansible_host: localhost
@@ -150,8 +150,8 @@ all:
         template:
         timesync:
         tlog:
-        trustee_attestation_client:
-        trustee_attestation_server:
+        trustee_client:
+        trustee_server:
         vpn:
     python_roles:
       hosts:
