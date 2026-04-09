@@ -56,10 +56,13 @@ jobs:
           python-version: ${{ matrix.versions.python }}
 {%- endraw +%}
 
-      - name: Convert role to collection format and run ansible-test
+      - name: Convert role to collection format
+        run: tox -e collection
+
+      - name: Run ansible-test
         run: |
 {%- raw %}
           tox \
             -x testenv:ansible-test-${{ matrix.versions.ansible }}.basepython="python${{ matrix.versions.python }}" \
-            -e collection,ansible-test-${{ matrix.versions.ansible }}
+            -e ansible-test-${{ matrix.versions.ansible }}
 {%- endraw +%}

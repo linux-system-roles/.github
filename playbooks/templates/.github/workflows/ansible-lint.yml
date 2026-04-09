@@ -53,12 +53,15 @@ jobs:
           python-version: ${{ matrix.versions.python }}
 {%- endraw +%}
 
-      - name: Convert role to collection format and run ansible-lint
+      - name: Convert role to collection format
+        run: tox -e collection
+
+      - name: Run ansible-lint
         run: |
           set -euxo pipefail
 {%- raw %}
           LSR_ANSIBLE_LINT_DEP="ansible-lint==${{ matrix.versions.ansible_lint }}" \
           LSR_ANSIBLE_LINT_ANSIBLE_DEP="ansible-core==${{ matrix.versions.ansible }}" \
           tox -x testenv:ansible-lint-collection.basepython="python${{ matrix.versions.python }}" \
-          -e collection,ansible-lint-collection
+          -e ansible-lint-collection
 {%- endraw +%}
