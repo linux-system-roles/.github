@@ -4,6 +4,8 @@ all:
       ansible_host: localhost
     aide:
       ansible_host: localhost
+    auditd:
+      ansible_host: localhost
     auto-maintenance:
       ansible_host: localhost
     bootloader:
@@ -117,6 +119,7 @@ all:
       hosts:
         ad_integration:
         aide:
+        auditd:
         bootloader:
         certificate:
         cockpit:
