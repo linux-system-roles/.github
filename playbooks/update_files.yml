@@ -218,25 +218,29 @@
             basenames: "{{ find.files | map(attribute='path') | map('basename') | sort | list }}"
           changed_when: false
 
-        # uncomment and change to 2.18 when 2.18 is released
-        # - name: Create ignore file for ansible-test 2.17
-        #   shell:
-        #     chdir: "{{ git_dir }}"
-        #     cmd: |
-        #       set -euxo pipefail
-        #       if [ ! -f .sanity-ansible-ignore-2.17.txt ] && [ -f .sanity-ansible-ignore-2.16.txt ]; then
-        #         cp .sanity-ansible-ignore-2.16.txt .sanity-ansible-ignore-2.17.txt
-        #         # 2.17 does not support py27 or py36
-        #         sed -e '/compile-2.7/d' -e '/compile-3.6/d' -e '/import-2.7/d' -e '/import-3.6/d' -i .sanity-ansible-ignore-2.17.txt
-        #         # https://docs.ansible.com/ansible-core/2.17/dev_guide/testing/sanity/no-unicode-literals.html
-        #         sed -e '/no-unicode-literals/d' -i .sanity-ansible-ignore-2.17.txt
-        #         if [ -s .sanity-ansible-ignore-2.17.txt ]; then
-        #           git add .sanity-ansible-ignore-2.17.txt
-        #         else
-        #           rm .sanity-ansible-ignore-2.17.txt
-        #         fi
-        #       fi
-        #   changed_when: true
+        - name: Manage ansible-test ignore files
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euxo pipefail
+              max_ver={{ supported_versions[-1] }}
+              last_max_ver={{ supported_versions[-2] }}
+              # ensure the max version file exists - just copy the previous version file
+              if [ ! -f ".sanity-ansible-ignore-${max_ver}.txt" ] && [ -f ".sanity-ansible-ignore-${last_max_ver}.txt" ]; then
+                cp ".sanity-ansible-ignore-${last_max_ver}.txt" ".sanity-ansible-ignore-${max_ver}.txt"
+                git add ".sanity-ansible-ignore-${max_ver}.txt"
+              fi
+              # ensure we have the gplv3 ignore for the sr_fingerprint module
+              sr_fp_line="plugins/modules/sr_fingerprint.py validate-modules:missing-gplv3-license"
+              for ver in {{ supported_versions | join(" ") }}; do
+                if ! grep -q "$sr_fp_line" ".sanity-ansible-ignore-${ver}.txt"; then
+                  echo "$sr_fp_line" >> ".sanity-ansible-ignore-${ver}.txt"
+                  git add ".sanity-ansible-ignore-${ver}.txt"
+                fi
+              done
+          changed_when: false
+          vars:
+            supported_versions: ["2.14", "2.16", "2.17", "2.18", "2.19", "2.20", "2.21", "2.22"]
 
         # NOTE: Due to https://github.com/linux-system-roles/cockpit/issues/130
         # we cannot automatically create symlinks for OracleLinux
