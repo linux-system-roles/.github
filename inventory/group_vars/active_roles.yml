@@ -8,6 +8,7 @@ present_files:
   - .ostree/get_ostree_data.sh
   - .ostree/README.md
   - README-ostree.md
+  - library/sr_fingerprint.py
 present_templates:
   - .ansible-lint
   - .codespellrc
