@@ -11,6 +11,7 @@ present_files:
   - library/sr_fingerprint.py
 present_templates:
   - .ansible-lint
+  - .coderabbit.yaml
   - .codespellrc
   - .yamllint.yml
   - contributing.md
