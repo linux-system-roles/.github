@@ -27,4 +27,5 @@ tmt_hardware:
     - type: eth
 runtime_collection_requirements:
   - name: ansible.posix
+    version: "{{ ansible_posix_version }}"
 test_collection_requirements: []

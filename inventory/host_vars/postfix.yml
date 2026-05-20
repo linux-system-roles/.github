@@ -4,5 +4,6 @@ github_actions:
       - cron: "0 17 * * 6"
 runtime_collection_requirements:
   - name: ansible.posix
+    version: "{{ ansible_posix_version }}"
   - name: fedora.linux_system_roles
 test_collection_requirements: []

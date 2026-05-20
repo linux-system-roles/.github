@@ -7,4 +7,5 @@ github_actions:
       - cron: "48 9 * * 6"
 runtime_collection_requirements:
   - name: ansible.posix
+    version: "{{ ansible_posix_version }}"
 test_collection_requirements: []

@@ -78,3 +78,5 @@ lsr_rh_distros: "{{ ['AlmaLinux', 'CentOS', 'RedHat', 'Rocky'] + lsr_rh_distros_
 # If a role needs a different version, the role can define its own community_general_version
 # in the role's host_vars file
 community_general_version: ">=6.6.0,<12.0.0"
+# ansible.posix version 2.2.0 does not work on EL7, so restrict it to 2.1.x
+ansible_posix_version: ">=2.1.0,<2.2.0"

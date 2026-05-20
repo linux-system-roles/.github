@@ -8,6 +8,7 @@
     if exclude_roles | d(false) else "" }}
   connection: local
   gather_facts: false
+  serial: 1  # NOTE: We are being rate limited by github, so only process 1 role at a time
   vars:
     update_files_branch: update_role_files
   tasks:
