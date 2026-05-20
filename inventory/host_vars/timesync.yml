@@ -12,4 +12,5 @@ ansible_lint:
     targets: target_hosts
 runtime_collection_requirements:
   - name: ansible.posix
+    version: "{{ ansible_posix_version }}"
 test_collection_requirements: []

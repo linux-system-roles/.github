@@ -9,6 +9,7 @@ ansible_lint:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
 runtime_collection_requirements:
   - name: ansible.posix
+    version: "{{ ansible_posix_version }}"
   - name: containers.podman
   - name: fedora.linux_system_roles
 test_collection_requirements:

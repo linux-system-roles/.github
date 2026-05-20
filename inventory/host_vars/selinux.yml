@@ -11,6 +11,7 @@ ansible_lint:
     - selinux
 runtime_collection_requirements:
   - name: ansible.posix
+    version: "{{ ansible_posix_version }}"
   - name: community.general
     version: "{{ community_general_version }}"
   - name: fedora.linux_system_roles
