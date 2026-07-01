@@ -161,7 +161,6 @@ all:
         certificate:
         bootloader:
         firewall:
-        gfs2:
         ha_cluster:
         kernel_settings:
         nbde_client:
