@@ -8,7 +8,8 @@
     if exclude_roles | d(false) else "" }}
   connection: local
   gather_facts: false
-  serial: 1  # NOTE: We are being rate limited by github, so only process 1 role at a time
+  # NOTE: We are being rate limited by github, so only process 1 role at a time
+  serial: "{{ '100%' if (lsr_dry_run | d('true') == 'true') else '1' }}"
   vars:
     update_files_branch: update_role_files
   tasks:
