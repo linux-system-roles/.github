@@ -1,7 +1,6 @@
 present_files:
   - .github/dependabot.yml
   - .github/pull_request_template.md
-  - .commitlintrc.js
   - .fmf/version
   - .markdownlint.yaml
   - .pandoc_template.html5
@@ -47,6 +46,7 @@ absent_files:
   - .github/actions/custom-woke-action/testdata/bad.txt
   - .github/actions/custom-woke-action
   - .github/actions
+  - .commitlintrc.js
 github_org: linux-system-roles
 github_url_prefix: "git@github.com:"
 default_ansible_lint:
