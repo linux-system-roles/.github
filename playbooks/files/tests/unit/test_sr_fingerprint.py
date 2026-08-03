@@ -154,8 +154,10 @@ class TestSrFingerprint(unittest.TestCase):
                 parsed = json.loads(log_fd.readline())
             self.assertEqual(parsed["role_name"], "systemd")
         finally:
-            os.unlink(log_file)
-            os.rmdir(os.path.dirname(log_file))
+            subdir = os.path.dirname(log_file)
+            for name in os.listdir(subdir):
+                os.unlink(os.path.join(subdir, name))
+            os.rmdir(subdir)
             os.rmdir(tmpdir)
 
     def test_write_jsonl_log_preserves_types(self):
@@ -232,6 +234,7 @@ class TestSrFingerprint(unittest.TestCase):
             {
                 "status": "begin",
                 "write_log_file": False,
+                "max_log_lines": 10000,
                 "role_name": "systemd",
                 "role_path": "/usr/share/ansible/roles/systemd",
                 "ansible_play_hosts_all": ["host1"],
@@ -249,11 +252,13 @@ class TestSrFingerprint(unittest.TestCase):
         self.assertNotIn("jsonl_row", result)
 
     def test_handle_fingerprint_check_mode_with_log_file(self):
+        log_path = os.path.join(tempfile.gettempdir(), "test_sr_fingerprint.jsonl")
         module = _FakeModule(
             {
                 "status": "success",
                 "write_log_file": True,
-                "log_file": "/tmp/test.jsonl",
+                "log_file": log_path,
+                "max_log_lines": 10000,
                 "role_name": "systemd",
                 "role_path": "/usr/share/ansible/roles/systemd",
                 "ansible_play_hosts_all": ["host1"],
@@ -266,7 +271,7 @@ class TestSrFingerprint(unittest.TestCase):
             sr_fingerprint._handle_fingerprint(module)
         result = ctx.exception.kwargs
         self.assertIn("jsonl_row", result)
-        self.assertEqual(result["log_file"], "/tmp/test.jsonl")
+        self.assertEqual(result["log_file"], log_path)
         parsed = json.loads(result["jsonl_row"])
         self.assertEqual(parsed["role_name"], "systemd")
 
@@ -288,6 +293,24 @@ class TestSrFingerprint(unittest.TestCase):
         with self.assertRaises(_FailJsonException) as ctx:
             sr_fingerprint._handle_fingerprint(module)
         self.assertIn("Failed to write fingerprint log file", ctx.exception.kwargs["msg"])
+
+    def test_handle_fingerprint_rejects_negative_max_log_lines(self):
+        module = _FakeModule(
+            {
+                "status": "begin",
+                "write_log_file": False,
+                "max_log_lines": -1,
+                "role_name": "systemd",
+                "role_path": "/usr/share/ansible/roles/systemd",
+                "ansible_play_hosts_all": ["host1"],
+                "distribution": "RedHat",
+                "distribution_version": "9.4",
+            },
+            check_mode=False,
+        )
+        with self.assertRaises(_FailJsonException) as ctx:
+            sr_fingerprint._handle_fingerprint(module)
+        self.assertIn("max_log_lines must be 0 or a positive integer", ctx.exception.kwargs["msg"])
 
     def test_local_iso8601_no_microseconds_has_no_fraction(self):
         timestamp = sr_fingerprint._local_iso8601_no_microseconds()

@@ -129,8 +129,10 @@ from ansible.module_utils.basic import AnsibleModule
 
 import datetime
 import errno
+import fcntl
 import json
 import os
+import tempfile
 
 FINGERPRINT_FIELDS = (
     "date",
@@ -183,21 +185,43 @@ def _format_fingerprint_jsonl(record):
     return json.dumps(record, separators=(",", ":"), sort_keys=False)
 
 
-def _trim_log_file(log_file, max_lines):
-    with open(log_file, "r") as log_fd:
-        lines = log_fd.readlines()
+def _trim_log_file(log_fd, log_file, max_lines):
+    """Trim log_fd in place; caller must hold an exclusive lock."""
+    log_fd.seek(0)
+    lines = log_fd.readlines()
     if len(lines) <= max_lines:
         return
-    with open(log_file, "w") as log_fd:
-        log_fd.writelines(lines[-max_lines:])
+    kept = lines[-max_lines:]
+    dir_name = os.path.dirname(log_file) or "."
+    fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
+    try:
+        with os.fdopen(fd, "w") as tmp_fd:
+            tmp_fd.writelines(kept)
+            tmp_fd.flush()
+            os.fsync(tmp_fd.fileno())
+        os.rename(tmp_path, log_file)
+    except BaseException:
+        try:
+            os.unlink(tmp_path)
+        except OSError:
+            pass
+        raise
 
 
 def _write_jsonl_log(log_file, record, max_lines=0):
     _ensure_parent_dir(log_file)
-    with open(log_file, "a") as log_fd:
-        log_fd.write(_format_fingerprint_jsonl(record) + "\n")
-    if max_lines > 0:
-        _trim_log_file(log_file, max_lines)
+    lock_path = log_file + ".lock"
+    lock_fd = open(lock_path, "w")
+    try:
+        fcntl.flock(lock_fd, fcntl.LOCK_EX)
+        with open(log_file, "a") as log_fd:
+            log_fd.write(_format_fingerprint_jsonl(record) + "\n")
+        if max_lines > 0:
+            with open(log_file, "r+") as log_fd:
+                _trim_log_file(log_fd, log_file, max_lines)
+    finally:
+        fcntl.flock(lock_fd, fcntl.LOCK_UN)
+        lock_fd.close()
 
 
 def _get_managed_node_distro(distribution, distribution_version):
@@ -260,6 +284,10 @@ def _format_fingerprint_syslog(record):
 
 
 def _handle_fingerprint(module):
+    max_log_lines = module.params.get("max_log_lines", 0)
+    if max_log_lines < 0:
+        module.fail_json(msg="max_log_lines must be 0 or a positive integer, got %d" % max_log_lines)
+
     fingerprint_record = _collect_fingerprint_record(module, module.params["status"])
     log_message = _format_fingerprint_syslog(fingerprint_record)
 
