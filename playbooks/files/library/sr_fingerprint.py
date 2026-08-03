@@ -15,8 +15,8 @@ description:
       (one JSON object per line, JSONL format), by default
       C(/var/log/sysroles.jsonl).
     - Playbook variables are not available inside modules automatically. Roles
-      pass C(role_name), C(role_path), C(ansible_play_hosts_all), and
-      C(ansible_facts) from the task.
+      pass C(role_name), C(role_path), C(ansible_play_hosts_all),
+      C(distribution), and C(distribution_version) from the task.
     - C(ansible_check_mode) is collected from the module execution context.
     - Intended for role-internal or diagnostic use.
 author: Rich Megginson (@richm)
@@ -38,6 +38,13 @@ options:
         description: Path to the JSONL log file.
         type: path
         default: /var/log/sysroles.jsonl
+    max_log_lines:
+        description: >-
+            Maximum number of lines to keep in the log file. When the file
+            exceeds this limit after a write, the oldest lines are removed.
+            Set to C(0) to disable trimming.
+        type: int
+        default: 10000
     role_name:
         description: Name of the role, typically C({{ role_name }}).
         type: str
@@ -53,12 +60,18 @@ options:
         type: list
         elements: str
         required: true
-    ansible_facts:
+    distribution:
         description: >-
-            Facts from the playbook for the current managed host, typically
-            C({{ ansible_facts }}).
-        type: dict
-        required: true
+            OS distribution name, typically
+            C({{ ansible_facts["distribution"] }}).
+        type: str
+        default: ""
+    distribution_version:
+        description: >-
+            OS distribution version, typically
+            C({{ ansible_facts["distribution_version"] }}).
+        type: str
+        default: ""
 """
 
 EXAMPLES = """
@@ -68,7 +81,8 @@ EXAMPLES = """
     role_name: bootloader
     role_path: "{{ role_path }}"
     ansible_play_hosts_all: "{{ ansible_play_hosts_all }}"
-    ansible_facts: "{{ ansible_facts }}"
+    distribution: "{{ ansible_facts['distribution'] }}"
+    distribution_version: "{{ ansible_facts['distribution_version'] }}"
     write_log_file: false
 
 - name: Record role success fingerprint
@@ -77,11 +91,39 @@ EXAMPLES = """
     role_name: bootloader
     role_path: "{{ role_path }}"
     ansible_play_hosts_all: "{{ ansible_play_hosts_all }}"
-    ansible_facts: "{{ ansible_facts }}"
+    distribution: "{{ ansible_facts['distribution'] }}"
+    distribution_version: "{{ ansible_facts['distribution_version'] }}"
     write_log_file: true
 """
 
-RETURN = r""" # """
+RETURN = r"""
+fingerprint:
+    description: The fingerprint record written to syslog and optionally to the log file.
+    returned: always
+    type: dict
+    sample:
+        date: "2026-08-03T10:15:00+02:00"
+        role_name: network
+        role_path: /usr/share/ansible/roles/linux-system-roles.network
+        status: success
+        ansible_version: "2.16.3"
+        managed_node_distro: RedHat-9.4
+        play_hosts_number: 3
+        ansible_check_mode: false
+message:
+    description: Informational message shown in check mode.
+    returned: check mode
+    type: str
+    sample: "Check mode: message not logged - [date=... role_name=...]"
+jsonl_row:
+    description: The JSON line that would be appended to the log file.
+    returned: check mode and O(write_log_file=true)
+    type: str
+log_file:
+    description: Path to the log file that would be written.
+    returned: check mode and O(write_log_file=true)
+    type: str
+"""
 
 from ansible.module_utils.basic import AnsibleModule
 
@@ -89,8 +131,6 @@ import datetime
 import errno
 import json
 import os
-
-DEFAULT_LOG_FILE = "/var/log/sysroles.jsonl"
 
 FINGERPRINT_FIELDS = (
     "date",
@@ -143,15 +183,24 @@ def _format_fingerprint_jsonl(record):
     return json.dumps(record, separators=(",", ":"), sort_keys=False)
 
 
-def _write_jsonl_log(log_file, record):
+def _trim_log_file(log_file, max_lines):
+    with open(log_file, "r") as log_fd:
+        lines = log_fd.readlines()
+    if len(lines) <= max_lines:
+        return
+    with open(log_file, "w") as log_fd:
+        log_fd.writelines(lines[-max_lines:])
+
+
+def _write_jsonl_log(log_file, record, max_lines=0):
     _ensure_parent_dir(log_file)
     with open(log_file, "a") as log_fd:
         log_fd.write(_format_fingerprint_jsonl(record) + "\n")
+    if max_lines > 0:
+        _trim_log_file(log_file, max_lines)
 
 
-def _get_managed_node_distro(facts):
-    distribution = facts.get("distribution")
-    distribution_version = facts.get("distribution_version")
+def _get_managed_node_distro(distribution, distribution_version):
     if distribution and distribution_version:
         return "%s-%s" % (distribution, distribution_version)
     return "unknown"
@@ -180,7 +229,9 @@ def _collect_fingerprint_record(module, status):
         "role_path": module.params["role_path"],
         "status": status,
         "ansible_version": _get_ansible_version(module),
-        "managed_node_distro": _get_managed_node_distro(module.params["ansible_facts"]),
+        "managed_node_distro": _get_managed_node_distro(
+            module.params["distribution"], module.params["distribution_version"]
+        ),
         "play_hosts_number": _get_play_hosts_number(
             module.params["ansible_play_hosts_all"]
         ),
@@ -208,22 +259,7 @@ def _format_fingerprint_syslog(record):
     return FINGERPRINT_SYSLOG_SEPARATOR.join(pairs)
 
 
-def run_module():
-    module_args = dict(
-        status=dict(type="str", required=True, choices=["begin", "success"]),
-        write_log_file=dict(type="bool", default=False),
-        log_file=dict(type="path", default=DEFAULT_LOG_FILE),
-        role_name=dict(type="str", required=True),
-        role_path=dict(type="path", required=True),
-        ansible_play_hosts_all=dict(type="list", elements="str", required=True),
-        ansible_facts=dict(type="dict", required=True, no_log=True),
-    )
-
-    module = AnsibleModule(
-        argument_spec=module_args,
-        supports_check_mode=True,
-    )
-
+def _handle_fingerprint(module):
     fingerprint_record = _collect_fingerprint_record(module, module.params["status"])
     log_message = _format_fingerprint_syslog(fingerprint_record)
 
@@ -243,17 +279,37 @@ def run_module():
     if module.params["write_log_file"]:
         log_file = module.params["log_file"]
         try:
-            _write_jsonl_log(log_file, fingerprint_record)
+            _write_jsonl_log(
+                log_file, fingerprint_record, module.params["max_log_lines"]
+            )
         except (IOError, OSError) as exc:
             module.fail_json(
                 msg="Failed to write fingerprint log file %s: %s"
                 % (log_file, exc)
             )
 
-    # we don't actually change anything, so we're not changed - writing a log message
-    # is not considered a change
-    # also, we don't want to report changed every time the role runs
     module.exit_json(changed=False, fingerprint=fingerprint_record)
+
+
+def run_module():
+    module_args = dict(
+        status=dict(type="str", required=True, choices=["begin", "success"]),
+        write_log_file=dict(type="bool", default=False),
+        log_file=dict(type="path", default="/var/log/sysroles.jsonl"),
+        max_log_lines=dict(type="int", default=10000),
+        role_name=dict(type="str", required=True),
+        role_path=dict(type="path", required=True),
+        ansible_play_hosts_all=dict(type="list", elements="str", required=True),
+        distribution=dict(type="str", default=""),
+        distribution_version=dict(type="str", default=""),
+    )
+
+    module = AnsibleModule(
+        argument_spec=module_args,
+        supports_check_mode=True,
+    )
+
+    _handle_fingerprint(module)
 
 
 def main():

@@ -16,12 +16,32 @@ import unittest
 import sr_fingerprint
 
 
+class _ExitJsonException(Exception):
+    def __init__(self, kwargs):
+        self.kwargs = kwargs
+
+
+class _FailJsonException(Exception):
+    def __init__(self, kwargs):
+        self.kwargs = kwargs
+
+
 class _FakeModule(object):
     ansible_version = "2.16.3"
 
     def __init__(self, params=None, check_mode=False):
         self.params = params or {}
         self.check_mode = check_mode
+        self.logged = []
+
+    def log(self, msg):
+        self.logged.append(msg)
+
+    def exit_json(self, **kwargs):
+        raise _ExitJsonException(kwargs)
+
+    def fail_json(self, **kwargs):
+        raise _FailJsonException(kwargs)
 
 
 def _sample_fingerprint_record():
@@ -67,10 +87,8 @@ class TestSrFingerprint(unittest.TestCase):
                 "role_name": "systemd",
                 "role_path": "/usr/share/ansible/roles/systemd",
                 "ansible_play_hosts_all": ["host1", "host2", "host3"],
-                "ansible_facts": {
-                    "distribution": "RedHat",
-                    "distribution_version": "9.4",
-                },
+                "distribution": "RedHat",
+                "distribution_version": "9.4",
             },
             check_mode=True,
         )
@@ -85,14 +103,12 @@ class TestSrFingerprint(unittest.TestCase):
             set(sr_fingerprint.FINGERPRINT_FIELDS),
         )
 
-    def test_get_managed_node_distro_from_facts(self):
-        distro = sr_fingerprint._get_managed_node_distro(
-            {"distribution": "Fedora", "distribution_version": "42"}
-        )
+    def test_get_managed_node_distro_from_params(self):
+        distro = sr_fingerprint._get_managed_node_distro("Fedora", "42")
         self.assertEqual(distro, "Fedora-42")
 
     def test_get_managed_node_distro_missing(self):
-        self.assertEqual(sr_fingerprint._get_managed_node_distro({}), "unknown")
+        self.assertEqual(sr_fingerprint._get_managed_node_distro("", ""), "unknown")
 
     def test_get_play_hosts_number(self):
         self.assertEqual(
@@ -157,6 +173,121 @@ class TestSrFingerprint(unittest.TestCase):
             self.assertIsInstance(parsed["ansible_check_mode"], bool)
         finally:
             os.unlink(log_file)
+
+    def test_trim_removes_oldest_lines(self):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
+            log_file = tmp.name
+
+        try:
+            record = _sample_fingerprint_record()
+            for i in range(10):
+                record_copy = dict(record, role_name="role_%d" % i)
+                sr_fingerprint._write_jsonl_log(log_file, record_copy, max_lines=5)
+
+            with open(log_file, "r") as log_fd:
+                lines = log_fd.read().splitlines()
+
+            self.assertEqual(len(lines), 5)
+            first = json.loads(lines[0])
+            last = json.loads(lines[-1])
+            self.assertEqual(first["role_name"], "role_5")
+            self.assertEqual(last["role_name"], "role_9")
+        finally:
+            os.unlink(log_file)
+
+    def test_trim_disabled_when_zero(self):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
+            log_file = tmp.name
+
+        try:
+            record = _sample_fingerprint_record()
+            for i in range(20):
+                sr_fingerprint._write_jsonl_log(log_file, record, max_lines=0)
+
+            with open(log_file, "r") as log_fd:
+                lines = log_fd.read().splitlines()
+
+            self.assertEqual(len(lines), 20)
+        finally:
+            os.unlink(log_file)
+
+    def test_trim_no_op_when_under_limit(self):
+        with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
+            log_file = tmp.name
+
+        try:
+            record = _sample_fingerprint_record()
+            for i in range(3):
+                sr_fingerprint._write_jsonl_log(log_file, record, max_lines=10)
+
+            with open(log_file, "r") as log_fd:
+                lines = log_fd.read().splitlines()
+
+            self.assertEqual(len(lines), 3)
+        finally:
+            os.unlink(log_file)
+
+    def test_handle_fingerprint_check_mode_without_log_file(self):
+        module = _FakeModule(
+            {
+                "status": "begin",
+                "write_log_file": False,
+                "role_name": "systemd",
+                "role_path": "/usr/share/ansible/roles/systemd",
+                "ansible_play_hosts_all": ["host1"],
+                "distribution": "RedHat",
+                "distribution_version": "9.4",
+            },
+            check_mode=True,
+        )
+        with self.assertRaises(_ExitJsonException) as ctx:
+            sr_fingerprint._handle_fingerprint(module)
+        result = ctx.exception.kwargs
+        self.assertFalse(result["changed"])
+        self.assertIn("Check mode", result["message"])
+        self.assertIn("fingerprint", result)
+        self.assertNotIn("jsonl_row", result)
+
+    def test_handle_fingerprint_check_mode_with_log_file(self):
+        module = _FakeModule(
+            {
+                "status": "success",
+                "write_log_file": True,
+                "log_file": "/tmp/test.jsonl",
+                "role_name": "systemd",
+                "role_path": "/usr/share/ansible/roles/systemd",
+                "ansible_play_hosts_all": ["host1"],
+                "distribution": "RedHat",
+                "distribution_version": "9.4",
+            },
+            check_mode=True,
+        )
+        with self.assertRaises(_ExitJsonException) as ctx:
+            sr_fingerprint._handle_fingerprint(module)
+        result = ctx.exception.kwargs
+        self.assertIn("jsonl_row", result)
+        self.assertEqual(result["log_file"], "/tmp/test.jsonl")
+        parsed = json.loads(result["jsonl_row"])
+        self.assertEqual(parsed["role_name"], "systemd")
+
+    def test_handle_fingerprint_write_failure_calls_fail_json(self):
+        module = _FakeModule(
+            {
+                "status": "success",
+                "write_log_file": True,
+                "log_file": "/nonexistent/deep/path/test.jsonl",
+                "max_log_lines": 10000,
+                "role_name": "systemd",
+                "role_path": "/usr/share/ansible/roles/systemd",
+                "ansible_play_hosts_all": ["host1"],
+                "distribution": "RedHat",
+                "distribution_version": "9.4",
+            },
+            check_mode=False,
+        )
+        with self.assertRaises(_FailJsonException) as ctx:
+            sr_fingerprint._handle_fingerprint(module)
+        self.assertIn("Failed to write fingerprint log file", ctx.exception.kwargs["msg"])
 
     def test_local_iso8601_no_microseconds_has_no_fraction(self):
         timestamp = sr_fingerprint._local_iso8601_no_microseconds()
