@@ -44,6 +44,14 @@ class _FakeModule(object):
         raise _FailJsonException(kwargs)
 
 
+def _cleanup_log(log_file):
+    for path in (log_file, log_file + ".lock"):
+        try:
+            os.unlink(path)
+        except OSError:
+            pass
+
+
 def _sample_fingerprint_record():
     return {
         "date": "2026-06-10T12:00:00+00:00",
@@ -140,7 +148,7 @@ class TestSrFingerprint(unittest.TestCase):
                 parsed = json.loads(line)
                 self.assertEqual(parsed, record)
         finally:
-            os.unlink(log_file)
+            _cleanup_log(log_file)
 
     def test_write_jsonl_log_creates_parent_dir(self):
         tmpdir = tempfile.mkdtemp()
@@ -174,7 +182,7 @@ class TestSrFingerprint(unittest.TestCase):
             self.assertIsInstance(parsed["play_hosts_number"], int)
             self.assertIsInstance(parsed["ansible_check_mode"], bool)
         finally:
-            os.unlink(log_file)
+            _cleanup_log(log_file)
 
     def test_trim_removes_oldest_lines(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
@@ -182,8 +190,8 @@ class TestSrFingerprint(unittest.TestCase):
 
         try:
             record = _sample_fingerprint_record()
-            for i in range(10):
-                record_copy = dict(record, role_name="role_%d" % i)
+            for _i in range(10):
+                record_copy = dict(record, role_name="role_%d" % _i)
                 sr_fingerprint._write_jsonl_log(log_file, record_copy, max_lines=5)
 
             with open(log_file, "r") as log_fd:
@@ -195,7 +203,7 @@ class TestSrFingerprint(unittest.TestCase):
             self.assertEqual(first["role_name"], "role_5")
             self.assertEqual(last["role_name"], "role_9")
         finally:
-            os.unlink(log_file)
+            _cleanup_log(log_file)
 
     def test_trim_disabled_when_zero(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
@@ -203,7 +211,7 @@ class TestSrFingerprint(unittest.TestCase):
 
         try:
             record = _sample_fingerprint_record()
-            for i in range(20):
+            for _i in range(20):
                 sr_fingerprint._write_jsonl_log(log_file, record, max_lines=0)
 
             with open(log_file, "r") as log_fd:
@@ -211,7 +219,7 @@ class TestSrFingerprint(unittest.TestCase):
 
             self.assertEqual(len(lines), 20)
         finally:
-            os.unlink(log_file)
+            _cleanup_log(log_file)
 
     def test_trim_no_op_when_under_limit(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
@@ -219,7 +227,7 @@ class TestSrFingerprint(unittest.TestCase):
 
         try:
             record = _sample_fingerprint_record()
-            for i in range(3):
+            for _i in range(3):
                 sr_fingerprint._write_jsonl_log(log_file, record, max_lines=10)
 
             with open(log_file, "r") as log_fd:
@@ -227,7 +235,7 @@ class TestSrFingerprint(unittest.TestCase):
 
             self.assertEqual(len(lines), 3)
         finally:
-            os.unlink(log_file)
+            _cleanup_log(log_file)
 
     def test_handle_fingerprint_check_mode_without_log_file(self):
         module = _FakeModule(
@@ -276,11 +284,12 @@ class TestSrFingerprint(unittest.TestCase):
         self.assertEqual(parsed["role_name"], "systemd")
 
     def test_handle_fingerprint_write_failure_calls_fail_json(self):
+        log_path = os.path.join(tempfile.gettempdir(), "test_write_fail.jsonl")
         module = _FakeModule(
             {
                 "status": "success",
                 "write_log_file": True,
-                "log_file": "/nonexistent/deep/path/test.jsonl",
+                "log_file": log_path,
                 "max_log_lines": 10000,
                 "role_name": "systemd",
                 "role_path": "/usr/share/ansible/roles/systemd",
@@ -290,9 +299,20 @@ class TestSrFingerprint(unittest.TestCase):
             },
             check_mode=False,
         )
-        with self.assertRaises(_FailJsonException) as ctx:
-            sr_fingerprint._handle_fingerprint(module)
-        self.assertIn("Failed to write fingerprint log file", ctx.exception.kwargs["msg"])
+        original = sr_fingerprint._write_jsonl_log
+
+        def _raise_ioerror(*args, **kwargs):
+            raise IOError("disk full")
+
+        sr_fingerprint._write_jsonl_log = _raise_ioerror
+        try:
+            with self.assertRaises(_FailJsonException) as ctx:
+                sr_fingerprint._handle_fingerprint(module)
+            self.assertIn(
+                "Failed to write fingerprint log file", ctx.exception.kwargs["msg"]
+            )
+        finally:
+            sr_fingerprint._write_jsonl_log = original
 
     def test_handle_fingerprint_rejects_negative_max_log_lines(self):
         module = _FakeModule(
@@ -310,7 +330,10 @@ class TestSrFingerprint(unittest.TestCase):
         )
         with self.assertRaises(_FailJsonException) as ctx:
             sr_fingerprint._handle_fingerprint(module)
-        self.assertIn("max_log_lines must be 0 or a positive integer", ctx.exception.kwargs["msg"])
+        self.assertIn(
+            "max_log_lines must be 0 or a positive integer",
+            ctx.exception.kwargs["msg"],
+        )
 
     def test_local_iso8601_no_microseconds_has_no_fraction(self):
         timestamp = sr_fingerprint._local_iso8601_no_microseconds()

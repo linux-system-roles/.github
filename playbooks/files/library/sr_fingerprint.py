@@ -7,7 +7,7 @@ __metaclass__ = type
 DOCUMENTATION = """
 ---
 module: sr_fingerprint
-short_description: Write role fingerprint data to syslog and optionally to a JSONL log file.
+short_description: Write role fingerprint data to syslog and optionally to a JSONL log file
 description:
     - Collects role fingerprint data into a canonical record and writes it to
       syslog using Ansible C(module.log) as C(key=value) pairs.
@@ -35,7 +35,9 @@ options:
         type: bool
         default: false
     log_file:
-        description: Path to the JSONL log file.
+        description: >-
+            Path to the JSONL log file. A lock sidecar (C(<log_file>.lock))
+            is created next to the log file for cross-process safety.
         type: path
         default: /var/log/sysroles.jsonl
     max_log_lines:
@@ -132,6 +134,7 @@ import errno
 import fcntl
 import json
 import os
+import stat
 import tempfile
 
 FINGERPRINT_FIELDS = (
@@ -192,9 +195,15 @@ def _trim_log_file(log_fd, log_file, max_lines):
     if len(lines) <= max_lines:
         return
     kept = lines[-max_lines:]
+    orig_stat = os.fstat(log_fd.fileno())
     dir_name = os.path.dirname(log_file) or "."
     fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     try:
+        os.fchmod(fd, stat.S_IMODE(orig_stat.st_mode))
+        try:
+            os.fchown(fd, orig_stat.st_uid, orig_stat.st_gid)
+        except OSError:
+            pass
         with os.fdopen(fd, "w") as tmp_fd:
             tmp_fd.writelines(kept)
             tmp_fd.flush()
@@ -286,7 +295,9 @@ def _format_fingerprint_syslog(record):
 def _handle_fingerprint(module):
     max_log_lines = module.params.get("max_log_lines", 0)
     if max_log_lines < 0:
-        module.fail_json(msg="max_log_lines must be 0 or a positive integer, got %d" % max_log_lines)
+        module.fail_json(
+            msg="max_log_lines must be 0 or a positive integer, got %d" % max_log_lines
+        )
 
     fingerprint_record = _collect_fingerprint_record(module, module.params["status"])
     log_message = _format_fingerprint_syslog(fingerprint_record)
@@ -312,8 +323,7 @@ def _handle_fingerprint(module):
             )
         except (IOError, OSError) as exc:
             module.fail_json(
-                msg="Failed to write fingerprint log file %s: %s"
-                % (log_file, exc)
+                msg="Failed to write fingerprint log file %s: %s" % (log_file, exc)
             )
 
     module.exit_json(changed=False, fingerprint=fingerprint_record)
