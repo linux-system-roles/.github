@@ -8,6 +8,7 @@ present_files:
   - .ostree/README.md
   - README-ostree.md
   - library/sr_fingerprint.py
+  - tests/unit/test_sr_fingerprint.yml
 present_templates:
   - .ansible-lint
   - .coderabbit.yaml
