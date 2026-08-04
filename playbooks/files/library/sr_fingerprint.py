@@ -40,13 +40,13 @@ options:
             is created next to the log file for cross-process safety.
         type: path
         default: /var/log/sysroles.jsonl
-    max_log_lines:
+    max_log_size:
         description: >-
-            Maximum number of lines to keep in the log file. When the file
-            exceeds this limit after a write, the oldest lines are removed.
+            Maximum log file size in bytes. When appending a new record
+            would exceed this limit, the oldest records are removed first.
             Set to C(0) to disable trimming.
         type: int
-        default: 10000
+        default: 2000000
     role_name:
         description: Name of the role, typically C({{ role_name }}).
         type: str
@@ -188,14 +188,13 @@ def _format_fingerprint_jsonl(record):
     return json.dumps(record, separators=(",", ":"), sort_keys=False)
 
 
-def _trim_log_file(log_fd, log_file, max_lines):
-    """Trim log_fd in place; caller must hold an exclusive lock."""
-    log_fd.seek(0)
-    lines = log_fd.readlines()
-    if len(lines) <= max_lines:
-        return
-    kept = lines[-max_lines:]
-    orig_stat = os.fstat(log_fd.fileno())
+def _trim_log_file(log_file, target_size):
+    """Remove oldest records until the file fits in target_size bytes."""
+    with open(log_file, "r") as log_fd:
+        lines = log_fd.readlines()
+    while lines and sum(len(l) for l in lines) > target_size:
+        lines.pop(0)
+    orig_stat = os.stat(log_file)
     dir_name = os.path.dirname(log_file) or "."
     fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
     try:
@@ -205,7 +204,7 @@ def _trim_log_file(log_fd, log_file, max_lines):
         except OSError:
             pass
         with os.fdopen(fd, "w") as tmp_fd:
-            tmp_fd.writelines(kept)
+            tmp_fd.writelines(lines)
             tmp_fd.flush()
             os.fsync(tmp_fd.fileno())
         os.rename(tmp_path, log_file)
@@ -217,17 +216,21 @@ def _trim_log_file(log_fd, log_file, max_lines):
         raise
 
 
-def _write_jsonl_log(log_file, record, max_lines=0):
+def _write_jsonl_log(log_file, record, max_size=0):
     _ensure_parent_dir(log_file)
+    new_line = _format_fingerprint_jsonl(record) + "\n"
     lock_path = log_file + ".lock"
     lock_fd = open(lock_path, "w")
     try:
         fcntl.flock(lock_fd, fcntl.LOCK_EX)
+        try:
+            cur_size = os.path.getsize(log_file)
+        except OSError:
+            cur_size = 0
+        if max_size > 0 and cur_size + len(new_line) > max_size:
+            _trim_log_file(log_file, max_size - len(new_line))
         with open(log_file, "a") as log_fd:
-            log_fd.write(_format_fingerprint_jsonl(record) + "\n")
-        if max_lines > 0:
-            with open(log_file, "r+") as log_fd:
-                _trim_log_file(log_fd, log_file, max_lines)
+            log_fd.write(new_line)
     finally:
         fcntl.flock(lock_fd, fcntl.LOCK_UN)
         lock_fd.close()
@@ -293,10 +296,10 @@ def _format_fingerprint_syslog(record):
 
 
 def _handle_fingerprint(module):
-    max_log_lines = module.params.get("max_log_lines", 0)
-    if max_log_lines < 0:
+    max_log_size = module.params.get("max_log_size", 0)
+    if max_log_size < 0:
         module.fail_json(
-            msg="max_log_lines must be 0 or a positive integer, got %d" % max_log_lines
+            msg="max_log_size must be 0 or a positive integer, got %d" % max_log_size
         )
 
     fingerprint_record = _collect_fingerprint_record(module, module.params["status"])
@@ -319,7 +322,7 @@ def _handle_fingerprint(module):
         log_file = module.params["log_file"]
         try:
             _write_jsonl_log(
-                log_file, fingerprint_record, module.params["max_log_lines"]
+                log_file, fingerprint_record, module.params["max_log_size"]
             )
         except (IOError, OSError) as exc:
             module.fail_json(
@@ -334,7 +337,7 @@ def run_module():
         status=dict(type="str", required=True, choices=["begin", "success"]),
         write_log_file=dict(type="bool", default=False),
         log_file=dict(type="path", default="/var/log/sysroles.jsonl"),
-        max_log_lines=dict(type="int", default=10000),
+        max_log_size=dict(type="int", default=2000000),
         role_name=dict(type="str", required=True),
         role_path=dict(type="path", required=True),
         ansible_play_hosts_all=dict(type="list", elements="str", required=True),

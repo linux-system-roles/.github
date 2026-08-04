@@ -56,7 +56,7 @@ def _sample_fingerprint_record():
     return {
         "date": "2026-06-10T12:00:00+00:00",
         "role_name": "systemd",
-        "role_path": "/usr/share/ansible/roles/systemd",
+        "role_path": "/usr/share/ansible/roles/linux-system-roles.systemd",
         "status": "begin",
         "ansible_version": "2.16.3",
         "managed_node_distro": "RedHat-9.4",
@@ -76,7 +76,7 @@ class TestSrFingerprint(unittest.TestCase):
         self.assertEqual(
             message,
             "date=2026-06-10T12:00:00+00:00 role_name=systemd "
-            "role_path=/usr/share/ansible/roles/systemd status=begin "
+            "role_path=/usr/share/ansible/roles/linux-system-roles.systemd status=begin "
             "ansible_version=2.16.3 managed_node_distro=RedHat-9.4 "
             "play_hosts_number=3 ansible_check_mode=False",
         )
@@ -93,7 +93,7 @@ class TestSrFingerprint(unittest.TestCase):
         module = _FakeModule(
             {
                 "role_name": "systemd",
-                "role_path": "/usr/share/ansible/roles/systemd",
+                "role_path": "/usr/share/ansible/roles/linux-system-roles.systemd",
                 "ansible_play_hosts_all": ["host1", "host2", "host3"],
                 "distribution": "RedHat",
                 "distribution_version": "9.4",
@@ -102,7 +102,9 @@ class TestSrFingerprint(unittest.TestCase):
         )
         record = sr_fingerprint._collect_fingerprint_record(module, "begin")
         self.assertEqual(record["role_name"], "systemd")
-        self.assertEqual(record["role_path"], "/usr/share/ansible/roles/systemd")
+        self.assertEqual(
+            record["role_path"], "/usr/share/ansible/roles/linux-system-roles.systemd"
+        )
         self.assertEqual(record["managed_node_distro"], "RedHat-9.4")
         self.assertEqual(record["play_hosts_number"], 3)
         self.assertTrue(record["ansible_check_mode"])
@@ -127,9 +129,11 @@ class TestSrFingerprint(unittest.TestCase):
 
     def test_format_fingerprint_syslog_quotes_values_with_spaces(self):
         record = _sample_fingerprint_record()
-        record["role_path"] = "/usr/share/ansible/roles/systemd extra"
+        record["role_path"] = "/usr/share/ansible/roles/linux-system-roles.systemd extra"
         message = sr_fingerprint._format_fingerprint_syslog(record)
-        self.assertIn('role_path="/usr/share/ansible/roles/systemd extra"', message)
+        self.assertIn(
+            'role_path="/usr/share/ansible/roles/linux-system-roles.systemd extra"', message
+        )
 
     def test_write_jsonl_log_appends_valid_json_lines(self):
         with tempfile.NamedTemporaryFile(delete=False, suffix=".jsonl") as tmp:
@@ -190,9 +194,13 @@ class TestSrFingerprint(unittest.TestCase):
 
         try:
             record = _sample_fingerprint_record()
+            # Each record with role_N name is 246 bytes; allow ~5 lines
+            max_size = 246 * 5
             for _i in range(10):
                 record_copy = dict(record, role_name="role_%d" % _i)
-                sr_fingerprint._write_jsonl_log(log_file, record_copy, max_lines=5)
+                sr_fingerprint._write_jsonl_log(
+                    log_file, record_copy, max_size=max_size
+                )
 
             with open(log_file, "r") as log_fd:
                 lines = log_fd.read().splitlines()
@@ -212,7 +220,7 @@ class TestSrFingerprint(unittest.TestCase):
         try:
             record = _sample_fingerprint_record()
             for _i in range(20):
-                sr_fingerprint._write_jsonl_log(log_file, record, max_lines=0)
+                sr_fingerprint._write_jsonl_log(log_file, record, max_size=0)
 
             with open(log_file, "r") as log_fd:
                 lines = log_fd.read().splitlines()
@@ -228,7 +236,7 @@ class TestSrFingerprint(unittest.TestCase):
         try:
             record = _sample_fingerprint_record()
             for _i in range(3):
-                sr_fingerprint._write_jsonl_log(log_file, record, max_lines=10)
+                sr_fingerprint._write_jsonl_log(log_file, record, max_size=2000000)
 
             with open(log_file, "r") as log_fd:
                 lines = log_fd.read().splitlines()
@@ -242,9 +250,9 @@ class TestSrFingerprint(unittest.TestCase):
             {
                 "status": "begin",
                 "write_log_file": False,
-                "max_log_lines": 10000,
+                "max_log_size": 2000000,
                 "role_name": "systemd",
-                "role_path": "/usr/share/ansible/roles/systemd",
+                "role_path": "/usr/share/ansible/roles/linux-system-roles.systemd",
                 "ansible_play_hosts_all": ["host1"],
                 "distribution": "RedHat",
                 "distribution_version": "9.4",
@@ -266,9 +274,9 @@ class TestSrFingerprint(unittest.TestCase):
                 "status": "success",
                 "write_log_file": True,
                 "log_file": log_path,
-                "max_log_lines": 10000,
+                "max_log_size": 2000000,
                 "role_name": "systemd",
-                "role_path": "/usr/share/ansible/roles/systemd",
+                "role_path": "/usr/share/ansible/roles/linux-system-roles.systemd",
                 "ansible_play_hosts_all": ["host1"],
                 "distribution": "RedHat",
                 "distribution_version": "9.4",
@@ -290,9 +298,9 @@ class TestSrFingerprint(unittest.TestCase):
                 "status": "success",
                 "write_log_file": True,
                 "log_file": log_path,
-                "max_log_lines": 10000,
+                "max_log_size": 2000000,
                 "role_name": "systemd",
-                "role_path": "/usr/share/ansible/roles/systemd",
+                "role_path": "/usr/share/ansible/roles/linux-system-roles.systemd",
                 "ansible_play_hosts_all": ["host1"],
                 "distribution": "RedHat",
                 "distribution_version": "9.4",
@@ -314,14 +322,14 @@ class TestSrFingerprint(unittest.TestCase):
         finally:
             sr_fingerprint._write_jsonl_log = original
 
-    def test_handle_fingerprint_rejects_negative_max_log_lines(self):
+    def test_handle_fingerprint_rejects_negative_max_log_size(self):
         module = _FakeModule(
             {
                 "status": "begin",
                 "write_log_file": False,
-                "max_log_lines": -1,
+                "max_log_size": -1,
                 "role_name": "systemd",
-                "role_path": "/usr/share/ansible/roles/systemd",
+                "role_path": "/usr/share/ansible/roles/linux-system-roles.systemd",
                 "ansible_play_hosts_all": ["host1"],
                 "distribution": "RedHat",
                 "distribution_version": "9.4",
@@ -331,7 +339,7 @@ class TestSrFingerprint(unittest.TestCase):
         with self.assertRaises(_FailJsonException) as ctx:
             sr_fingerprint._handle_fingerprint(module)
         self.assertIn(
-            "max_log_lines must be 0 or a positive integer",
+            "max_log_size must be 0 or a positive integer",
             ctx.exception.kwargs["msg"],
         )
 
