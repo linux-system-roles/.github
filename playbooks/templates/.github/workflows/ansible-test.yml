@@ -50,7 +50,7 @@ jobs:
           pip3 install "{{ tox_lsr_url }}"
 
       - name: Set up Python
-        uses: actions/setup-python@v6
+        uses: actions/setup-python@v7
         with:
 {%- raw %}
           python-version: ${{ matrix.versions.python }}
