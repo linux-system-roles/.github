@@ -192,7 +192,7 @@ def _trim_log_file(log_file, target_size):
     """Remove oldest records until the file fits in target_size bytes."""
     with open(log_file, "r") as log_fd:
         lines = log_fd.readlines()
-    while lines and sum(len(l) for l in lines) > target_size:
+    while lines and sum(len(line) for line in lines) > target_size:
         lines.pop(0)
     orig_stat = os.stat(log_file)
     dir_name = os.path.dirname(log_file) or "."
@@ -227,7 +227,7 @@ def _write_jsonl_log(log_file, record, max_size=0):
             cur_size = os.path.getsize(log_file)
         except OSError:
             cur_size = 0
-        if max_size > 0 and cur_size + len(new_line) > max_size:
+        if max_size > 0 and cur_size + len(new_line) > max_size and cur_size > 0:
             _trim_log_file(log_file, max_size - len(new_line))
         with open(log_file, "a") as log_fd:
             log_fd.write(new_line)

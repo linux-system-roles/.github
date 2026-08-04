@@ -129,10 +129,13 @@ class TestSrFingerprint(unittest.TestCase):
 
     def test_format_fingerprint_syslog_quotes_values_with_spaces(self):
         record = _sample_fingerprint_record()
-        record["role_path"] = "/usr/share/ansible/roles/linux-system-roles.systemd extra"
+        record["role_path"] = (
+            "/usr/share/ansible/roles/linux-system-roles.systemd extra"
+        )
         message = sr_fingerprint._format_fingerprint_syslog(record)
         self.assertIn(
-            'role_path="/usr/share/ansible/roles/linux-system-roles.systemd extra"', message
+            'role_path="/usr/share/ansible/roles/linux-system-roles.systemd extra"',
+            message,
         )
 
     def test_write_jsonl_log_appends_valid_json_lines(self):
@@ -194,8 +197,9 @@ class TestSrFingerprint(unittest.TestCase):
 
         try:
             record = _sample_fingerprint_record()
-            # Each record with role_N name is 246 bytes; allow ~5 lines
-            max_size = 246 * 5
+            sample = dict(record, role_name="role_0")
+            line_size = len(sr_fingerprint._format_fingerprint_jsonl(sample) + "\n")
+            max_size = line_size * 5
             for _i in range(10):
                 record_copy = dict(record, role_name="role_%d" % _i)
                 sr_fingerprint._write_jsonl_log(
@@ -345,7 +349,10 @@ class TestSrFingerprint(unittest.TestCase):
 
     def test_local_iso8601_no_microseconds_has_no_fraction(self):
         timestamp = sr_fingerprint._local_iso8601_no_microseconds()
-        self.assertNotIn(".", timestamp)
+        self.assertRegex(
+            timestamp,
+            r"^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}[+-]\d{2}:?\d{2}$",
+        )
 
 
 if __name__ == "__main__":
