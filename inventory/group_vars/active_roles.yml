@@ -35,6 +35,7 @@ present_templates:
   - tests/vars/rh_distros_vars.yml
   - tests/tasks/run_role_with_clear_facts.yml
 absent_files:
+  - .commitlintrc.js
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
