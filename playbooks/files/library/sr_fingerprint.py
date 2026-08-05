@@ -188,12 +188,13 @@ def _format_fingerprint_jsonl(record):
     return json.dumps(record, separators=(",", ":"), sort_keys=False)
 
 
-def _trim_log_file(log_file, target_size):
-    """Remove oldest records until the file fits in target_size bytes."""
+def _trim_log_file(log_file, size_needed):
+    """Remove oldest records until the file can accommodate size_needed bytes."""
     with open(log_file, "r") as log_fd:
         lines = log_fd.readlines()
-    while lines and sum(len(line) for line in lines) > target_size:
-        lines.pop(0)
+    size_removed = 0
+    while lines and size_removed < size_needed:
+        size_removed += len(lines.pop(0))
     orig_stat = os.stat(log_file)
     dir_name = os.path.dirname(log_file) or "."
     fd, tmp_path = tempfile.mkstemp(dir=dir_name, suffix=".tmp")
@@ -228,7 +229,7 @@ def _write_jsonl_log(log_file, record, max_size=0):
         except OSError:
             cur_size = 0
         if max_size > 0 and cur_size + len(new_line) > max_size and cur_size > 0:
-            _trim_log_file(log_file, max_size - len(new_line))
+            _trim_log_file(log_file, len(new_line))
         with open(log_file, "a") as log_fd:
             log_fd.write(new_line)
     finally:
@@ -296,7 +297,7 @@ def _format_fingerprint_syslog(record):
 
 
 def _handle_fingerprint(module):
-    max_log_size = module.params.get("max_log_size", 0)
+    max_log_size = module.params["max_log_size"]
     if max_log_size < 0:
         module.fail_json(
             msg="max_log_size must be 0 or a positive integer, got %d" % max_log_size
