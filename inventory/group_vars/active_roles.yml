@@ -8,6 +8,7 @@ present_files:
   - .ostree/README.md
   - README-ostree.md
   - library/sr_fingerprint.py
+  - tests/unit/test_sr_fingerprint.py
 present_templates:
   - .ansible-lint
   - .coderabbit.yaml
@@ -34,6 +35,7 @@ present_templates:
   - tests/vars/rh_distros_vars.yml
   - tests/tasks/run_role_with_clear_facts.yml
 absent_files:
+  - .commitlintrc.js
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
