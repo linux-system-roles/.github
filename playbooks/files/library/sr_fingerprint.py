@@ -179,6 +179,7 @@ def _ensure_parent_dir(path):
     try:
         os.makedirs(parent)
     except OSError as exc:
+        # another process may have created the directory
         if exc.errno != errno.EEXIST or not os.path.isdir(parent):
             raise
 
@@ -203,6 +204,7 @@ def _trim_log_file(log_file, size_needed):
         try:
             os.fchown(fd, orig_stat.st_uid, orig_stat.st_gid)
         except OSError:
+            # not running as root; keep default ownership
             pass
         with os.fdopen(fd, "w") as tmp_fd:
             tmp_fd.writelines(lines)
@@ -213,6 +215,7 @@ def _trim_log_file(log_file, size_needed):
         try:
             os.unlink(tmp_path)
         except OSError:
+            # already removed or never created
             pass
         raise
 
@@ -227,6 +230,7 @@ def _write_jsonl_log(log_file, record, max_size=0):
         try:
             cur_size = os.path.getsize(log_file)
         except OSError:
+            # file does not exist yet
             cur_size = 0
         if max_size > 0 and cur_size + len(new_line) > max_size and cur_size > 0:
             _trim_log_file(log_file, len(new_line))

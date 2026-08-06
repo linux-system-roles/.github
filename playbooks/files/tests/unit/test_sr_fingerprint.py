@@ -50,6 +50,7 @@ def _cleanup_log(log_file):
         try:
             os.unlink(path)
         except OSError:
+            # file may not exist
             pass
 
 
