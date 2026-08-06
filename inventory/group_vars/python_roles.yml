@@ -1,4 +1,5 @@
-present_python_files: []
+present_python_files:
+  - pytest_extra_requirements.txt
 present_python_templates:
   - .github/workflows/codeql.yml
   - .github/workflows/python-unit-test.yml
