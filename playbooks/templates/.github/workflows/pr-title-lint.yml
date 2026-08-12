@@ -20,6 +20,7 @@ jobs:
     steps:
       - uses: {{ gha_checkout_action }}
         with:
+          persist-credentials: false
           fetch-depth: 0
 
       - name: Install pr_title_lint.py

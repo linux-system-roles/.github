@@ -101,6 +101,8 @@ jobs:
 
       - name: checkout PR
         uses: {{ gha_checkout_action }}
+        with:
+          persist-credentials: false
 
       - name: Install platform dependencies, python, tox, tox-lsr
         run: |
@@ -120,6 +122,7 @@ jobs:
       - name: Clone pcs
         uses: {{ gha_checkout_action }}
         with:
+          persist-credentials: false
           repository: ClusterLabs/pcs
 {%- raw %}
           ref: ${{ matrix.pcs_version }}
@@ -163,4 +166,4 @@ jobs:
           VIRTUALENV_SYSTEM_SITE_PACKAGES=true TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v7
+        uses: codecov/codecov-action@fb8b3582c8e4def4969c97caa2f19720cb33a72f  # v7

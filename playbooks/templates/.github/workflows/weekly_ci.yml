@@ -32,6 +32,7 @@ jobs:
       - name: Checkout latest code
         uses: {{ gha_checkout_action }}
         with:
+          persist-credentials: true  # needed for commit and push
           fetch-depth: 0
 
 {%- raw %}
@@ -52,7 +53,7 @@ jobs:
           git push -f --set-upstream origin ${{ env.BRANCH_NAME }}
 
       - name: Create and comment pull request
-        uses: actions/github-script@v9
+        uses: actions/github-script@3a2844b7e9c422d3c10d287c895573f7108da1b3  # v9
         with:
           github-token: ${{ secrets.GH_PUSH_TOKEN }}
           script: |

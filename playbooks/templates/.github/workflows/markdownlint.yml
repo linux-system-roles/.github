@@ -29,6 +29,8 @@ jobs:
 
       - name: Check out code
         uses: {{ gha_checkout_action }}
+        with:
+          persist-credentials: false
 
       # CHANGELOG.md is generated automatically from PR titles and descriptions
       # It might have issues but they are not critical
