@@ -379,7 +379,7 @@
               fi
               prnum="$(gh pr list -H "$branch" --json number --jq '.[].number')"
               if [ -z "$prnum" ]; then
-                cmd=(gh pr create --assignee @me --fill --base {{ __main_br | quote }})
+                cmd=(gh pr create --assignee @me --fill-first --base {{ __main_br | quote }})
                 if [ {{ lsr_dry_run | d('true') }} = false ]; then
                   retries=0
                   backoff=10
