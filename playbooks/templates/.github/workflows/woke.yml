@@ -12,10 +12,12 @@ jobs:
     steps:
       - name: Checkout
         uses: {{ gha_checkout_action }}
+        with:
+          persist-credentials: false
 
       - name: Run lsr-woke-action
         # Originally, uses: get-woke/woke-action@v0
-        uses: linux-system-roles/lsr-woke-action@main
+        uses: linux-system-roles/lsr-woke-action@33e72e28c826f05aaee08d0b70c7d2cd9e0a39a7  # main
         with:
           woke-args: "-c https://raw.githubusercontent.com/linux-system-roles/tox-lsr/main/src/tox_lsr/config_files/woke.yml --count-only-error-for-failure"
           # Cause the check to fail on any broke rules

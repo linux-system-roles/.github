@@ -39,6 +39,8 @@ jobs:
 
       - name: Checkout repo
         uses: {{ gha_checkout_action }}
+        with:
+          persist-credentials: false
 
       - name: Get head sha of the PR
         id: head_sha
@@ -55,6 +57,7 @@ jobs:
       - name: Checkout PR
         uses: {{ gha_checkout_action }}
         with:
+          persist-credentials: false
 {%- raw %}
           ref: ${{ steps.head_sha.outputs.head_sha }}
 {%- endraw +%}
@@ -143,7 +146,7 @@ jobs:
 
       - name: Set commit status as pending
         if: contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
-        uses: myrotvorets/set-commit-status-action@master
+        uses: myrotvorets/set-commit-status-action@2774e1f040c82ed70a76b4b5cd53bb11ffaedd0a  # master
         with:
           sha: ${{ needs.prepare_vars.outputs.head_sha }}
           status: pending
@@ -153,7 +156,7 @@ jobs:
 
       - name: Set commit status as success with a description that platform is skipped
         if: "!contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)"
-        uses: myrotvorets/set-commit-status-action@master
+        uses: myrotvorets/set-commit-status-action@2774e1f040c82ed70a76b4b5cd53bb11ffaedd0a  # master
         with:
           sha: ${{ needs.prepare_vars.outputs.head_sha }}
           status: success
@@ -162,7 +165,7 @@ jobs:
           targetUrl: ""
 
       - name: Run test in testing farm
-        uses: sclorg/testing-farm-as-github-action@v4
+        uses: sclorg/testing-farm-as-github-action@230555baceb860aa468d216f1822974836b965d1  # v4
         if: contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
         with:
           git_ref: main
@@ -193,7 +196,7 @@ jobs:
 {%- raw %}
 
       - name: Set final commit status
-        uses: myrotvorets/set-commit-status-action@master
+        uses: myrotvorets/set-commit-status-action@2774e1f040c82ed70a76b4b5cd53bb11ffaedd0a  # master
         if: always() && contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
         with:
           sha: ${{ needs.prepare_vars.outputs.head_sha }}
