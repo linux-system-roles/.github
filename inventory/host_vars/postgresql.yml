@@ -7,8 +7,6 @@ ansible_lint:
     - linux-system-roles.certificate
 runtime_collection_requirements:
   - name: ansible.posix
-    version: "{{ ansible_posix_version }}"
   - name: fedora.linux_system_roles
   - name: community.general
-    version: "{{ community_general_version }}"
 test_collection_requirements: []

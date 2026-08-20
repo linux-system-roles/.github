@@ -73,12 +73,10 @@ tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@d594be24ed56e586
 # OracleLinux has some problems with some roles, so we don't include it here
 # Roles that do support OracleLinux can list it in lsr_rh_distros_extra
 lsr_rh_distros: "{{ ['AlmaLinux', 'CentOS', 'RedHat', 'Rocky'] + lsr_rh_distros_extra | d([]) }}"
-# the lower bound is an older version, but I don't want to restrict the ability of a user
-# of a particular role to use an old version, rather than forcing them to use 11.x or later
-# Some roles like rhc explicitly require 6.6.0 or later - I think this is a reasonable
-# lower bound for all roles
-# If a role needs a different version, the role can define its own community_general_version
-# in the role's host_vars file
-community_general_version: ">=6.6.0,<12.0.0"
-# ansible.posix version 2.2.0 does not work on EL7, so restrict it to 2.1.x
-ansible_posix_version: ">=2.1.0,<2.2.0"
+# The ansible.posix and community.general versions are intentionally left
+# unconstrained so that all roles track the latest releases. EL7 compatibility
+# is preserved by vendoring EL7-compatible modules into the roles that support
+# EL7 managed nodes (and by tft-tests skipping collection installation when
+# running on ansible 2.9), so the previous caps (ansible.posix <2.2.0,
+# community.general <12.0.0) are no longer needed. If a role ever needs to pin a
+# version, it can add a version to the entry in the role's host_vars file.
