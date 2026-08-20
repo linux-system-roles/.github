@@ -1,11 +1,17 @@
 ---
 name: Run integration tests in Testing Farm
 on:
+  pull_request:
+    types:
+      - opened
+      - synchronize
+      - labeled
   issue_comment:
     types:
       - created
 permissions:
   contents: read
+  pull-requests: read
   # This is required for the ability to create/update the Pull request status
   statuses: write
 jobs:
@@ -13,17 +19,50 @@ jobs:
     name: Get info from role and PR to determine if and how to test
     # The concurrency key is used to prevent multiple workflows from running at the same time
     concurrency:
-    {%- raw %}
+{%- raw %}
       # group name contains reponame-pr_num to allow simualteneous runs in different PRs
-      group: testing-farm-${{ github.event.repository.name }}-${{ github.event.issue.number }}
+      group: testing-farm-${{ github.event.repository.name }}-${{ github.event.issue.number || github.event.number }}
       cancel-in-progress: true
     # Let's schedule tests only on user request. NOT automatically.
     # Only repository owner or member can schedule tests
     if: |
-      github.event.issue.pull_request
-      && contains(github.event.comment.body, '[citest]')
-      && (contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'), github.event.comment.author_association)
-      || github.event.comment.user.login == 'systemroller')
+      (
+        github.event_name == 'issue_comment'
+        && github.event.issue.pull_request
+        && (contains(github.event.comment.body, '[citest_all]')
+            || contains(github.event.comment.body, '[citest]')
+            || contains(github.event.comment.body, '[citest_tft]'))
+        && (contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'),
+                     github.event.comment.author_association)
+            || github.event.comment.user.login == 'systemroller')
+      ) || (
+        github.event_name == 'pull_request'
+        && github.event.action == 'opened'
+        && (contains(github.event.pull_request.labels.*.name, 'citest_all')
+            || contains(github.event.pull_request.labels.*.name, 'citest')
+            || contains(github.event.pull_request.labels.*.name, 'citest_tft'))
+        && (contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'),
+                     github.event.pull_request.author_association)
+            || github.event.pull_request.user.login == 'systemroller')
+      ) || (
+        github.event_name == 'pull_request'
+        && github.event.action == 'synchronize'
+        && (contains(github.event.pull_request.labels.*.name, 'citest_all')
+            || contains(github.event.pull_request.labels.*.name, 'citest')
+            || contains(github.event.pull_request.labels.*.name, 'citest_tft'))
+        && (contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'),
+                     github.event.pull_request.author_association)
+            || github.event.sender.login == 'systemroller')
+      ) || (
+        github.event_name == 'pull_request'
+        && github.event.action == 'labeled'
+        && (github.event.label.name == 'citest_all'
+            || github.event.label.name == 'citest'
+            || github.event.label.name == 'citest_tft')
+        && (contains(fromJson('["OWNER", "MEMBER", "COLLABORATOR"]'),
+                     github.event.pull_request.author_association)
+            || github.event.sender.login == 'systemroller')
+      )
     runs-on: ubuntu-latest
     outputs:
       supported_platforms: ${{ steps.supported_platforms.outputs.supported_platforms }}
@@ -31,18 +70,16 @@ jobs:
       memory: ${{ steps.memory.outputs.memory }}
     steps:
       - name: Dump github context
+        if: env.SR_DEBUG == 'true'
         run:   echo "$GITHUB_CONTEXT"
         shell: bash
         env:
           GITHUB_CONTEXT: ${{ toJson(github) }}
+          SR_DEBUG: 'false'  # set to true to debug
 {%- endraw +%}
 
-      - name: Checkout repo
-        uses: {{ gha_checkout_action }}
-        with:
-          persist-credentials: false
-
       - name: Get head sha of the PR
+        if: github.event_name == 'issue_comment'
         id: head_sha
         run: |
           head_sha=$(gh api "repos/$REPO/pulls/$PR_NO" --jq '.head.sha')
@@ -50,7 +87,7 @@ jobs:
         env:
 {%- raw %}
           REPO: ${{ github.repository }}
-          PR_NO: ${{ github.event.issue.number }}
+          PR_NO: ${{ github.event.issue.number || github.event.number }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 {%- endraw +%}
 
@@ -59,7 +96,7 @@ jobs:
         with:
           persist-credentials: false
 {%- raw %}
-          ref: ${{ steps.head_sha.outputs.head_sha }}
+          ref: ${{ steps.head_sha.outputs.head_sha || github.sha }}
 {%- endraw +%}
 
       - name: Get memory
@@ -126,7 +163,7 @@ jobs:
             ansible_version: "2.17"
     runs-on: ubuntu-latest
     env:
-      ARTIFACTS_DIR_NAME: "tf_${{ github.event.repository.name }}-${{ github.event.issue.number }}_\
+      ARTIFACTS_DIR_NAME: "tf_${{ github.event.repository.name }}-${{ github.event.issue.number || github.event.number }}_\
         ${{ matrix.platform }}-${{ matrix.ansible_version }}_\
         ${{ needs.prepare_vars.outputs.datetime }}/artifacts"
       ARTIFACT_TARGET_DIR: /srv/pub/alt/${{ vars.SR_LSR_USER }}/logs
@@ -135,7 +172,7 @@ jobs:
         id: set_vars
         run: |
           printf -v DATETIME '%(%Y%m%d-%H%M%S)T' -1
-          ARTIFACTS_DIR_NAME="tf_${{ github.event.repository.name }}-${{ github.event.issue.number }}_\
+          ARTIFACTS_DIR_NAME="tf_${{ github.event.repository.name }}-${{ github.event.issue.number || github.event.number }}_\
           ${{ matrix.platform }}-${{ matrix.ansible_version }}_$DATETIME/artifacts"
           ARTIFACTS_TARGET_DIR=/srv/pub/alt/${{ vars.SR_LSR_USER }}/logs
           ARTIFACTS_DIR=$ARTIFACTS_TARGET_DIR/$ARTIFACTS_DIR_NAME
@@ -175,7 +212,7 @@ jobs:
           variables: "SR_ANSIBLE_VER=${{ matrix.ansible_version }};\
             SR_REPO_NAME=${{ github.event.repository.name }};\
             SR_GITHUB_ORG=${{ github.repository_owner }};\
-            SR_PR_NUM=${{ github.event.issue.number }};\
+            SR_PR_NUM=${{ github.event.issue.number || github.event.number }};\
             SR_ARTIFACTS_DIR=${{ steps.set_vars.outputs.ARTIFACTS_DIR }};\
             SR_TEST_LOCAL_CHANGES=false;\
             SR_LSR_USER=${{ vars.SR_LSR_USER }};\
