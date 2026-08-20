@@ -146,15 +146,6 @@
           when: item | length > 0
           changed_when: false
 
-        - name: Process files to be added or updated
-          copy:
-            src: "{{ item }}"
-            dest: "{{ git_dir }}/{{ item }}"
-            mode: preserve
-          loop: "{{ present_files + __present_python_files +
-            __present_shellcheck_files }}"
-          changed_when: false
-
         - name: Process files to be removed
           shell:
             chdir: "{{ git_dir }}"
@@ -167,6 +158,15 @@
               fi
           changed_when: false
           loop: "{{ __all_absent }}"
+
+        - name: Process files to be added or updated
+          copy:
+            src: "{{ item }}"
+            dest: "{{ git_dir }}/{{ item }}"
+            mode: preserve
+          loop: "{{ present_files + __present_python_files +
+            __present_shellcheck_files }}"
+          changed_when: false
 
         # NOTE: Some of the templates are github action definitions
         # which use ${{ var }} - you may have to put {%- raw %}
@@ -185,6 +185,43 @@
             __present_python_templates + __present_shellcheck_templates)) +
             ([__role_template_dir] | product(__role_present_templates)) }}"
           changed_when: false
+
+        - name: Ensure citest labels exist
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euo pipefail
+              repo="{{ github_org }}/{{ inventory_hostname }}"
+              labels=(citest citest_all)
+              shopt -s nullglob
+              for wf in .github/workflows/*.yml; do
+                base=$(basename "$wf")
+                case "$base" in
+                  build_docs.yml|changelog_to_tag.yml|tft_citest_bad.yml|weekly_ci.yml)
+                    continue
+                    ;;
+                esac
+                labels+=("citest_${base%.yml}")
+              done
+              existing=$(gh label list --repo "$repo" --limit 1000 --json name --jq '.[].name')
+              added=0
+              for label in "${labels[@]}"; do
+                if printf '%s\n' "$existing" | grep -Fxq "$label"; then
+                  continue
+                fi
+                echo "Creating label $label on $repo"
+                added=1
+                if [ {{ lsr_dry_run | d('true') }} = false ]; then
+                  gh label create "$label" --repo "$repo" \
+                    --color 0E8A16 \
+                    --description "Trigger CI tests ($label)"
+                fi
+              done
+              if [ "$added" -eq 1 ]; then
+                echo CHANGED
+              fi
+          register: __citest_labels
+          changed_when: "'CHANGED' in __citest_labels.stdout"
 
         - name: Find workflows to create badges for
           find:

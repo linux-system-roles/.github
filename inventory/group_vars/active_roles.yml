@@ -49,6 +49,7 @@ absent_files:
   - .github/actions/custom-woke-action
   - .github/actions
   - .commitlintrc.js
+  - .github/workflows/shellcheck.yml  # some roles have shellcheck tests that are not shellcheck roles
 github_org: linux-system-roles
 github_url_prefix: "git@github.com:"
 default_ansible_lint:
