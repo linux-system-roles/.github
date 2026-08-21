@@ -318,8 +318,12 @@
 
               # Use this in conditionals to check if distro is Red Hat or clone, or Fedora
               __{{ inventory_hostname }}_is_rh_distro_fedora: "{{ '{{' }} ansible_facts['distribution'] in __{{ inventory_hostname }}_rh_distros_fedora {{ '}}' }}"
+
+              # Use these in conditionals to check if distro is Red Hat or clone of a specific major version
+              {% for ver in [7, 8, 9, 10] %}
+              __{{ inventory_hostname }}_is_rh_distro_{{ ver }}: "{{ '{{' }} __{{ inventory_hostname }}_is_rh_distro and ansible_facts['distribution_major_version'] == '{{ ver }}' {{ '}}' }}"
+              {% endfor %}
           register: __vars_main_block
-          changed_when: false
 
         - name: Add vars files with changes to git transaction
           command:
