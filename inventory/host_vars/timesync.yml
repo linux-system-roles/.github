@@ -1,7 +1,7 @@
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 2 * * 0"
+      - cron: "0 15 * * 0"
 # ansible-test does not like that we use a shell script as a module
 # so we have to add ignores for that - but ansible-lint does not like
 # ignores

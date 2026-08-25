@@ -1,7 +1,7 @@
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 12 * * 6"
+      - cron: "0 23 * * 6"
   codeql:
     schedule:
       - cron: "48 10 * * 2"

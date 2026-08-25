@@ -4,9 +4,9 @@ ansible_lint:
   skip_list:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 5 * * 6"
+      - cron: "0 10 * * 6"
   codeql:
     schedule:
       - cron: "48 9 * * 6"
