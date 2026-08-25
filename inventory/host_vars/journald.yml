@@ -1,7 +1,7 @@
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 12 * * 6"
+      - cron: "0 15 * * 6"
 runtime_collection_requirements:
   - name: ansible.posix
 test_collection_requirements: []

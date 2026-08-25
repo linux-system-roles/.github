@@ -232,9 +232,9 @@
               - ansible-plugin-scan.yml
               - build_docs.yml
               - changelog_to_tag.yml
+              - periodic_ci.yml
               - pr-title-lint.yml
               - test_converting_readme.yml
-              - weekly_ci.yml
           register: find
 
         - name: Ensure badges in README.md

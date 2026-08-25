@@ -3,9 +3,9 @@ ansible_lint:
     - win_domain_group
     - win_domain_user
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 12 * * 6"
+      - cron: "0 2 * * 6"
 runtime_collection_requirements:
   - name: ansible.posix
   - name: community.general

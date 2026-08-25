@@ -1,7 +1,7 @@
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 8 * * 6"
+      - cron: "0 19 * * 6"
 ansible_lint:
   extra_kinds:
     - tasks: "**/tasks/*.yml"

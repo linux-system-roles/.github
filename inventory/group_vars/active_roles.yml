@@ -27,7 +27,7 @@ present_templates:
   - .github/workflows/test_converting_readme.yml
   - .github/workflows/tft.yml
   - .github/workflows/tft_citest_bad.yml
-  - .github/workflows/weekly_ci.yml
+  - .github/workflows/periodic_ci.yml
   - .github/workflows/woke.yml
   - README-ansible.md
   - plans/README-plans.md
@@ -39,6 +39,7 @@ absent_files:
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
+  - .github/workflows/weekly_ci.yml
   - README-devel.md
   - README-testing.md
   - .github/actions/custom-woke-action/LICENSE

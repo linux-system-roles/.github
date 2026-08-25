@@ -14,8 +14,8 @@ The structure of the files/directories under `playbooks/files` and
 files/directories in the role repositories.  For example,
 `playbooks/templates/.ansible-lint` corresponds to the `.ansible-lint` file in
 the root directory of the role repositories.
-`playbooks/.github/workflows/weekly_ci.yml` corresponds to the file
-`.github/workflows/weekly_ci.yml` in the role repositories.
+`playbooks/templates/.github/workflows/periodic_ci.yml` corresponds to the file
+`.github/workflows/periodic_ci.yml` in the role repositories.
 
 The file `inventory.yml` is the list of all roles and contains the groups
 `active_roles` for all of the actively maintained and supported roles, and the
@@ -71,7 +71,7 @@ all:
 ```
 
 * Add the new file `inventory/host_vars/$ROLENAME.yml` - add any customizations
-  for the github actions weekly_ci, ansible_lint, etc.
+  for the github actions periodic_ci, ansible_lint, etc.
 
 Add a new config or github action file
 --------------------------------------
@@ -121,7 +121,7 @@ To configure Github tools to run the automation, complete the following steps:
 
 * Configure credentials caching by running:
 
-    ```
+    ```bash
     $ git config --global credential.helper cache
     ```
 
@@ -163,7 +163,7 @@ anything on github, add `-e lsr_dry_run=true` to the ansible-playbook command.
 
 Run it like this:
 
-```
+```bash
 ansible-playbook -vv -i inventory -e lsr_dry_run=false \
   -e update_files_branch=my_update_branch -e exclude_roles=nbde_client \
   -e test_dir=/var/tmp/lsr \

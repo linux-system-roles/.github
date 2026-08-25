@@ -1,7 +1,7 @@
 github_actions:
-  weekly_ci:
+  periodic_ci:
     schedule:
-      - cron: "0 21 * * 6"
+      - cron: "0 9 * * 0"
 role_specific_contributing: include_files/ssh_contributing.md
 runtime_collection_requirements:
   - name: ansible.posix
