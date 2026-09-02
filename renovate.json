@@ -1,0 +1,60 @@
+{
+  "$schema": "https://docs.renovatebot.com/renovate-schema.json",
+  "extends": ["config:recommended", "schedule:monthly"],
+  "commitMessagePrefix": "ci: [citest_skip] ",
+  "enabledManagers": ["custom.regex"],
+  "customManagers": [
+    {
+      "customType": "regex",
+      "description": [
+        "Rule 1: bump SHA-pinned, version-tagged GitHub Actions in the workflow templates.",
+        "Matches lines like: 'uses: actions/setup-python@<40-hex-sha>  # v7'",
+        "(including subpath actions, e.g. 'github/codeql-action/init@<sha>  # v4.37.4').",
+        "The github-tags datasource resolves the newest release tag and updates both the SHA and the '# vX' comment."
+      ],
+      "managerFilePatterns": [
+        "playbooks/templates/**/*.yml",
+        "playbooks/templates/**/*.yaml",
+        "playbooks/role_templates/**/*.yml",
+        "playbooks/role_templates/**/*.yaml"
+      ],
+      "matchStrings": [
+        "uses:\\s+(?<depName>[\\w.-]+/[\\w.-]+)(?:/[\\w.-]+)*@(?<currentDigest>[a-f0-9]{40})\\s+#\\s*(?<currentValue>v?\\d[\\w.-]*)"
+      ],
+      "datasourceTemplate": "github-tags"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Rule 2: bump branch-pinned GitHub Actions in the workflow templates.",
+        "Matches lines like: 'uses: redhat-actions/podman-install@<40-hex-sha>  # main'",
+        "or 'uses: myrotvorets/set-commit-status-action@<sha>  # master'.",
+        "Rule 1 ignores these because the comment is a branch, not a version; the git-refs datasource rolls the SHA to the latest commit on that branch (the '# main'/'# master' comment stays)."
+      ],
+      "managerFilePatterns": [
+        "playbooks/templates/**/*.yml",
+        "playbooks/templates/**/*.yaml",
+        "playbooks/role_templates/**/*.yml",
+        "playbooks/role_templates/**/*.yaml"
+      ],
+      "matchStrings": [
+        "uses:\\s+(?<depName>[\\w.-]+/[\\w.-]+)(?:/[\\w.-]+)*@(?<currentDigest>[a-f0-9]{40})\\s+#\\s*(?<currentValue>main|master)"
+      ],
+      "datasourceTemplate": "git-refs",
+      "packageNameTemplate": "https://github.com/{{{depName}}}"
+    },
+    {
+      "customType": "regex",
+      "description": [
+        "Rule 3: bump the SHA-pinned checkout action stored as an Ansible variable.",
+        "Matches the line in active_roles.yml: 'gha_checkout_action: actions/checkout@<sha>  # v7'.",
+        "It is not a 'uses:' line (it is injected into the templates via {{ gha_checkout_action }}), so Rules 1 and 2 never see it; the github-tags datasource updates the SHA and the '# vX' comment."
+      ],
+      "managerFilePatterns": ["inventory/group_vars/active_roles.yml"],
+      "matchStrings": [
+        "gha_checkout_action:\\s*(?<depName>[\\w.-]+/[\\w.-]+)@(?<currentDigest>[a-f0-9]{40})\\s+#\\s*(?<currentValue>v?\\d[\\w.-]*)"
+      ],
+      "datasourceTemplate": "github-tags"
+    }
+  ]
+}
