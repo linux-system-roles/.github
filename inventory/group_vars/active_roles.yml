@@ -74,9 +74,14 @@ tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@d594be24ed56e586
 # Roles that do support OracleLinux can list it in lsr_rh_distros_extra
 lsr_rh_distros: "{{ ['AlmaLinux', 'CentOS', 'RedHat', 'Rocky'] + lsr_rh_distros_extra | d([]) }}"
 # The ansible.posix and community.general versions are intentionally left
-# unconstrained so that all roles track the latest releases. EL7 compatibility
-# is preserved by vendoring EL7-compatible modules into the roles that support
-# EL7 managed nodes (and by tft-tests skipping collection installation when
-# running on ansible 2.9), so the previous caps (ansible.posix <2.2.0,
-# community.general <12.0.0) are no longer needed. If a role ever needs to pin a
+# unconstrained so that all roles track the latest releases. Compatibility with
+# older managed nodes is preserved by vendoring modules into the roles that need
+# them and selecting, per task, either the vendored copy or the latest
+# collection module based on the managed node's python version: the latest
+# community.general requires python >= 3.7 and the latest ansible.posix requires
+# python 3, so nodes below those thresholds use the vendored copies. This also
+# covers ansible 2.9 managed nodes (e.g. EL7, python 2), where the collections
+# cannot be installed at all (tft-tests likewise skip collection installation on
+# ansible 2.9). The previous caps (ansible.posix <2.2.0, community.general
+# <12.0.0) are therefore no longer needed. If a role ever needs to pin a
 # version, it can add a version to the entry in the role's host_vars file.
