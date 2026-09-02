@@ -138,7 +138,7 @@ jobs:
 
       - name: Ensure use of podman 5
         if: steps.check_platform.outputs.supported && steps.check_podman_version.outputs.need_podman_update == 1
-        uses: redhat-actions/podman-install@3b6c60c447c93960c0b76faa0c66c6694bc71350  # main
+        uses: redhat-actions/podman-install@0499d3899e6b92f60548b38421893a7f8ba4bd07  # main
 
       - name: Configure tox-lsr
         if: steps.check_platform.outputs.supported
