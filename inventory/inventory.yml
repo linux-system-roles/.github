@@ -12,7 +12,7 @@ all:
       ansible_host: localhost
     certificate:
       ansible_host: localhost
-    ci-testing:
+    ci_testing:
       ansible_host: localhost
     cockpit:
       ansible_host: localhost
@@ -122,6 +122,7 @@ all:
         auditd:
         bootloader:
         certificate:
+        ci_testing:
         cockpit:
         crypto_policies:
         fapolicyd:
@@ -160,6 +161,7 @@ all:
       hosts:
         certificate:
         bootloader:
+        ci_testing:
         firewall:
         ha_cluster:
         kernel_settings:
@@ -174,6 +176,7 @@ all:
         vpn:
     shellcheck_roles:
       hosts:
+        ci_testing:
         firewall:
         ha_cluster:
         kernel_settings:
@@ -184,3 +187,6 @@ all:
         storage:
         timesync:
         vpn:
+    test_roles:
+      hosts:
+        ci_testing:

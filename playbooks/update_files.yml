@@ -1,11 +1,12 @@
 - name: Manage files in system roles repos
-  # NOTE: include_roles currently only works with 1 role - need to figure out
-  # how to pass in a list of include roles
-  hosts: active_roles{{
-    include_roles | split(",") | map("regex_replace", "^", ":&") | join("")
-    if include_roles | d(false) else "" }}{{
-    exclude_roles | split(",") | map("regex_replace", "^", ":!") | join("")
-    if exclude_roles | d(false) else "" }}
+  # include_roles: run only on those hosts (comma-delimited).
+  # Otherwise run on active_roles, minus test_roles and exclude_roles.
+  hosts: "{{
+    include_roles | split(',') | map('trim') | select | join(',')
+    if include_roles | d(false) else
+    'active_roles:!test_roles' }}{{
+    exclude_roles | split(',') | map('trim') | map('regex_replace', '^', ':!') | join('')
+    if not include_roles | d(false) and exclude_roles | d(false) else '' }}"
   connection: local
   gather_facts: false
   # NOTE: We are being rate limited by github, so only process 1 role at a time

@@ -1,0 +1,10 @@
+github_actions:
+  periodic_ci:
+    schedule:
+      - cron: "0 2 * * 6"
+  codeql:
+    schedule:
+      - cron: "20 17 * * 4"
+runtime_collection_requirements:
+  - name: ansible.posix
+  - name: fedora.linux_system_roles

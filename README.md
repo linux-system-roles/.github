@@ -18,9 +18,10 @@ the root directory of the role repositories.
 `.github/workflows/periodic_ci.yml` in the role repositories.
 
 The file `inventory.yml` is the list of all roles and contains the groups
-`active_roles` for all of the actively maintained and supported roles, and the
+`active_roles` for all of the actively maintained and supported roles, the
 group `python_roles` for the roles that provide Ansible python plugins such as
-modules, filters, etc.
+modules, filters, etc., and the group `test_roles` for roles used only to
+test CI and file-management automation (for example `ci_testing`).
 
 The file `inventory/group_vars/active_roles.yml` is used for settings common to
 all roles.
@@ -152,12 +153,13 @@ anything on github, add `-e lsr_dry_run=true` to the ansible-playbook command.
   create and remove a tmpdir
 * `exclude_roles` - default none - you can specify a comma-delimited list of
   roles to exclude from processing.  This is useful when you want to update
-  all roles *except* the given roles.
+  all roles *except* the given roles.  Ignored when `include_roles` is set.
+  When `include_roles` is not set, roles in the `test_roles` group are also
+  excluded.
 * `include_roles` - default none - you can specify a comma-delimited list of
   roles to include in processing, and all other roles will be excluded.  This
   is useful when you want to update *only* the given roles, and exclude the
-  rest.  NOTE: `include_roles` currently only works with 1 role at a time.
-  You cannot currently specify a list of roles.
+  rest.  Use this to update a `test_roles` host such as `ci_testing`.
 
 ### Run it
 
@@ -174,7 +176,8 @@ ansible-playbook -vv -i inventory -e lsr_dry_run=false \
 
 * A temp directory is created if `test_dir` is not specified
 * All of the roles are cloned into that directory, except for the roles
-  listed in `exclude_roles`
+  listed in `exclude_roles` and the `test_roles` group (or only the roles
+  listed in `include_roles`, when that is set)
 * Figure out the name of the main branch
 * If the branch `update_files_branch` does not exist, it is
   created from the main branch
