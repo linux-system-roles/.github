@@ -21,6 +21,8 @@ present_templates:
   - .github/workflows/build_docs.yml
   - .github/workflows/changelog_to_tag.yml
   - .github/workflows/codespell.yml
+  - .github/workflows/citest-instructions.yml
+  - .github/workflows/citest.yml
   - .github/workflows/markdownlint.yml
   - .github/workflows/pr-title-lint.yml
   - .github/workflows/qemu-kvm-integration-tests.yml
@@ -35,7 +37,6 @@ present_templates:
   - tests/vars/rh_distros_vars.yml
   - tests/tasks/run_role_with_clear_facts.yml
 absent_files:
-  - .commitlintrc.js
   - .github/workflows/ansible-plugin-scan.yml
   - .github/workflows/commitlint.yml
   - .github/workflows/tox.yml
