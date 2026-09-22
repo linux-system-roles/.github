@@ -237,7 +237,7 @@
               done
           changed_when: false
           vars:
-            supported_versions: ["2.14", "2.16", "2.17", "2.18", "2.19", "2.20", "2.21", "2.22"]
+            supported_versions: ["2.14", "2.16", "2.17", "2.18", "2.19", "2.20", "2.21", "2.22", "2.23"]
 
         # NOTE: Due to https://github.com/linux-system-roles/cockpit/issues/130
         # we cannot automatically create symlinks for OracleLinux
