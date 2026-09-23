@@ -1,6 +1,9 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
-  "extends": ["config:recommended", "schedule:monthly"],
+  "extends": [
+    "config:recommended",
+    "group:all"
+  ],
   "commitMessagePrefix": "ci: [citest_skip] ",
   "enabledManagers": ["custom.regex"],
   "customManagers": [
