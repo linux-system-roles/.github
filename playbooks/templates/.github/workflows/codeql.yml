@@ -49,7 +49,7 @@ jobs:
       - name: Set commit status as pending
         if: github.event_name == 'issue_comment'
 {%- raw %}
-        uses: myrotvorets/set-commit-status-action@c0f880c99d91381c6fdb97726f03feb8004409b4  # master
+        uses: myrotvorets/set-commit-status-action@abbe2bbb378e5e47254afb8a430bf66637a22893  # master
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: pending
@@ -73,17 +73,17 @@ jobs:
 {%- endraw +%}
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@cdf488f595d80d6e07e03d4674febd5ab45fa938  # v4.37.9
+        uses: github/codeql-action/init@1c5b675653bb5c22dbe9b12b556ec555138e09fd  # v4.38.1
         with:
 {%- raw %}
           languages: ${{ matrix.language }}
           queries: +security-and-quality
 
       - name: Autobuild
-        uses: github/codeql-action/autobuild@cdf488f595d80d6e07e03d4674febd5ab45fa938  # v4.37.9
+        uses: github/codeql-action/autobuild@1c5b675653bb5c22dbe9b12b556ec555138e09fd  # v4.38.1
 
       - name: Perform CodeQL Analysis
-        uses: github/codeql-action/analyze@cdf488f595d80d6e07e03d4674febd5ab45fa938  # v4.37.9
+        uses: github/codeql-action/analyze@1c5b675653bb5c22dbe9b12b556ec555138e09fd  # v4.38.1
         with:
           category: "/language:${{ matrix.language }}"
 {%- endraw +%}
@@ -91,7 +91,7 @@ jobs:
       - name: Set final commit status
         if: always() && github.event_name == 'issue_comment' && steps.head_sha_context.outputs.head_sha != ''
 {%- raw %}
-        uses: myrotvorets/set-commit-status-action@c0f880c99d91381c6fdb97726f03feb8004409b4  # master
+        uses: myrotvorets/set-commit-status-action@abbe2bbb378e5e47254afb8a430bf66637a22893  # master
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: ${{ job.status }}
