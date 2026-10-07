@@ -98,7 +98,7 @@ jobs:
           case "$image" in
           centos-*) platform=el; platform_version=el"${image#centos-}" ;;
           fedora-*) platform=fedora; platform_version="${image/-/}" ;;
-          leap-*) platform=leap; platform_version="${image}" ;;
+          leap-*) platform=leap; platform_version="${image%%.*}"; platform_version="${platform_version/-/}" ;;
           esac
           supported=
           if yq -e '.galaxy_info.galaxy_tags[] | select(. == "'${platform_version}'" or . == "'${platform}'")' meta/main.yml; then
