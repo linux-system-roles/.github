@@ -4,4 +4,5 @@ github_actions:
       - cron: "0 16 * * 6"
 runtime_collection_requirements:
   - name: ansible.posix
+  - name: community.general
 test_collection_requirements: []
