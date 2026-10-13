@@ -24,6 +24,13 @@
         - /usr/bin/gh
         - "{{ lookup('env', 'HOME') ~ '/.config/gh/hosts.yml' }}"
 
+    - name: Set up GitHub Actions management
+      include_tasks: tasks/manage_actions.yml
+      vars:
+        manage_actions_phase: setup
+      run_once: true
+      when: inventory_hostname == ansible_play_hosts_all[0]
+
     - name: Ensure git commit file is present
       assert:
         msg: >-
@@ -350,6 +357,11 @@
 
         - name: Manage collection-requirements.yml files
           include_tasks: tasks/manage_collection_requirements.yml
+
+        - name: Manage GitHub Actions lockfile
+          include_tasks: tasks/manage_actions.yml
+          vars:
+            manage_actions_phase: lockfile
 
         - name: Create git commit, PR
           shell:
