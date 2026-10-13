@@ -60,7 +60,7 @@ jobs:
 {%- endraw +%}
 
       - name: Checkout PR
-        uses: {{ gha_checkout_action }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 {%- raw %}
@@ -150,7 +150,9 @@ jobs:
 
       - name: Set commit status as pending
         if: contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
-        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: pending
@@ -173,7 +175,9 @@ jobs:
 
       - name: Set commit status as success with a description that platform is skipped
         if: "!contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)"
-        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: success
@@ -213,7 +217,9 @@ jobs:
 {%- raw %}
 
       - name: Set final commit status
-        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         if: always() && contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}

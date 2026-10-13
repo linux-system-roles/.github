@@ -50,7 +50,9 @@ jobs:
 
       - name: Set commit status as pending
         if: github.event_name == 'issue_comment'
-        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: pending
@@ -66,7 +68,7 @@ jobs:
 
       - name: checkout PR
 {%- endraw +%}
-        uses: {{ gha_checkout_action }}
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
         with:
           persist-credentials: false
 {%- raw %}
@@ -125,7 +127,9 @@ jobs:
 
       - name: Set final commit status
         if: always() && github.event_name == 'issue_comment' && steps.head_sha_context.outputs.head_sha != ''
-        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: ${{ job.status }}
