@@ -70,7 +70,9 @@ default_ansible_lint:
 lsr_namespace: fedora
 lsr_name: linux_system_roles
 lsr_role_namespace: linux_system_roles  # for ansible-lint
-gha_checkout_action: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+gh_action_prefix: linux-system-roles/.github/github-actions
+gh_action_gitref: main
+gh_action_checkout: "{{ gh_action_prefix }}/checkout@{{ gh_action_gitref }}"
 tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@bfd11b23a1ed56388ea7ab8263d30e3172553a7c"  # 3.21.0
 # These are the supported RHEL-alike distros - note that at the time of writing,
 # OracleLinux has some problems with some roles, so we don't include it here

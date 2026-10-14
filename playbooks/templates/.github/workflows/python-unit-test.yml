@@ -50,7 +50,9 @@ jobs:
 
       - name: Set commit status as pending
         if: github.event_name == 'issue_comment'
-        uses: myrotvorets/set-commit-status-action@7d293526a4d5b6d646891aa57a6d34c073e17ab9  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: pending
@@ -66,7 +68,7 @@ jobs:
 
       - name: checkout PR
 {%- endraw +%}
-        uses: {{ gha_checkout_action }}
+        uses: {{ gh_action_checkout }}
         with:
           persist-credentials: false
 {%- raw %}
@@ -121,11 +123,15 @@ jobs:
           TOXENV="$toxenvs" lsr_ci_runtox
 
       - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@303a32d7a59b442fa8d48b6a1cc6825c09c847a5  # v7.1.1
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/codecov-upload@{{ gh_action_gitref }}
+{%- raw %}
 
       - name: Set final commit status
         if: always() && github.event_name == 'issue_comment' && steps.head_sha_context.outputs.head_sha != ''
-        uses: myrotvorets/set-commit-status-action@7d293526a4d5b6d646891aa57a6d34c073e17ab9  # master
+{%- endraw +%}
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: ${{ job.status }}

@@ -46,19 +46,6 @@
       ],
       "datasourceTemplate": "git-refs",
       "packageNameTemplate": "https://github.com/{{{depName}}}"
-    },
-    {
-      "customType": "regex",
-      "description": [
-        "Rule 3: bump the SHA-pinned checkout action stored as an Ansible variable.",
-        "Matches the line in active_roles.yml: 'gha_checkout_action: actions/checkout@<sha>  # v7'.",
-        "It is not a 'uses:' line (it is injected into the templates via {{ gha_checkout_action }}), so Rules 1 and 2 never see it; the github-tags datasource updates the SHA and the '# vX' comment."
-      ],
-      "managerFilePatterns": ["inventory/group_vars/active_roles.yml"],
-      "matchStrings": [
-        "gha_checkout_action:\\s*(?<depName>[\\w.-]+/[\\w.-]+)@(?<currentDigest>[a-f0-9]{40})\\s+#\\s*(?<currentValue>v?\\d[\\w.-]*)"
-      ],
-      "datasourceTemplate": "github-tags"
     }
   ]
 }

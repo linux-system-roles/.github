@@ -24,6 +24,25 @@
         - /usr/bin/gh
         - "{{ lookup('env', 'HOME') ~ '/.config/gh/hosts.yml' }}"
 
+    - name: Manage organization GitHub Actions permissions
+      include_tasks: tasks/manage_actions.yml
+      run_once: true
+      when:
+        - inventory_hostname == ansible_play_hosts_all[0]
+        - not (lsr_dry_run | d(true) | bool)
+
+    - name: Ensure gh actions-lock extension is installed
+      shell:
+        executable: /bin/bash
+        cmd: |
+          set -euo pipefail
+          if ! gh extension list | awk -F '\t' '$2 == "github/gh-actions-lock" { found=1 } END { exit !found }'; then
+            gh extension install github/gh-actions-lock
+          fi
+      changed_when: false
+      run_once: true
+      when: inventory_hostname == ansible_play_hosts_all[0]
+
     - name: Ensure git commit file is present
       assert:
         msg: >-
@@ -350,6 +369,18 @@
 
         - name: Manage collection-requirements.yml files
           include_tasks: tasks/manage_collection_requirements.yml
+
+        # do this after updating all of the files in the .github/workflows
+        # directory
+        - name: Manage GitHub Actions lockfile
+          shell:
+            chdir: "{{ git_dir }}"
+            executable: /bin/bash
+            cmd: |
+              set -euo pipefail
+              gh actions-lock --no-interactive
+              git add .github/workflows/actions.lock
+          changed_when: false
 
         - name: Create git commit, PR
           shell:

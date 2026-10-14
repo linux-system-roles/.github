@@ -74,6 +74,15 @@ all:
 * Add the new file `inventory/host_vars/$ROLENAME.yml` - add any customizations
   for the github actions periodic_ci, ansible_lint, etc.
 
+Shared GitHub actions
+---------------------
+
+Reusable composite actions live under `github-actions/`, with one `action.yml`
+per action directory.  Workflow templates reference them as
+`linux-system-roles/.github/github-actions/<action>@main`, so publish changes
+to this repository before distributing updated workflow templates to role
+repositories.
+
 Add a new config or github action file
 --------------------------------------
 

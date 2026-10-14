@@ -19,7 +19,7 @@ jobs:
     if: inputs.requested || github.event_name != 'issue_comment'
     runs-on: ubuntu-latest
     steps:
-      - uses: {{ gha_checkout_action }}
+      - uses: {{ gh_action_checkout }}
         with:
           persist-credentials: false
           fetch-depth: 0
