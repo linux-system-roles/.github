@@ -6,6 +6,8 @@ tmt_hardware:
   memory: ">= 4096 MB"
 runtime_collection_requirements:
   - name: fedora.linux_system_roles
+  # needed on SUSE: the package module uses community.general.zypper there
+  - name: community.general
 test_collection_requirements:
   - name: ansible.windows
   - name: fedora.linux_system_roles
