@@ -7,5 +7,7 @@ github_actions:
       - cron: "8 10 * * 3"
 runtime_collection_requirements:
   - name: ansible.posix
+  # needed on SUSE: the package module uses community.general.zypper there
+  - name: community.general
 test_collection_requirements:
   - name: fedora.linux_system_roles

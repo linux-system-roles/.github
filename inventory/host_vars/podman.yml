@@ -9,6 +9,8 @@ ansible_lint:
     - sanity[cannot-ignore]  # wokeignore:rule=sanity
 runtime_collection_requirements:
   - name: ansible.posix
+  # needed on SUSE: the package module uses community.general.zypper there
+  - name: community.general
   - name: containers.podman
   - name: fedora.linux_system_roles
 test_collection_requirements:
