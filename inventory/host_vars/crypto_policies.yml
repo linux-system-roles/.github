@@ -4,4 +4,6 @@ github_actions:
       - cron: "0 8 * * 6"
 runtime_collection_requirements:
   - name: ansible.posix
+  # needed on SUSE: the package module uses community.general.zypper there
+  - name: community.general
 test_collection_requirements: []
