@@ -150,7 +150,7 @@ jobs:
 
       - name: Set commit status as pending
         if: contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
-        uses: myrotvorets/set-commit-status-action@7d293526a4d5b6d646891aa57a6d34c073e17ab9  # master
+        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: pending
@@ -173,7 +173,7 @@ jobs:
 
       - name: Set commit status as success with a description that platform is skipped
         if: "!contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)"
-        uses: myrotvorets/set-commit-status-action@7d293526a4d5b6d646891aa57a6d34c073e17ab9  # master
+        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
           status: success
@@ -213,7 +213,7 @@ jobs:
 {%- raw %}
 
       - name: Set final commit status
-        uses: myrotvorets/set-commit-status-action@7d293526a4d5b6d646891aa57a6d34c073e17ab9  # master
+        uses: myrotvorets/set-commit-status-action@fb2c69e2b7fcb2a27c49df2f06c941ebebe87ba6  # master
         if: always() && contains(needs.prepare_vars.outputs.supported_platforms, matrix.platform)
         with:
           sha: ${{ steps.head_sha_context.outputs.head_sha }}
