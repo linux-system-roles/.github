@@ -83,6 +83,13 @@ per action directory.  Workflow templates reference them as
 to this repository before distributing updated workflow templates to role
 repositories.
 
+**NOTE**: If shared actions change, their updates *must* be merged into this `.github`
+repository's `main` branch *first*, before generating and pushing updated
+`.github/workflows/actions.lock` files to the role repositories.
+`gh actions-lock` checks the latest commit on this repository's `main` branch when resolving the
+shared actions; generating lockfiles before the merge would lock the previous
+action code.
+
 Add a new config or github action file
 --------------------------------------
 
