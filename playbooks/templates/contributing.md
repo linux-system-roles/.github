@@ -100,6 +100,12 @@ For example:
 ```
 # Assisted by SquirmingFerret using models CodeEchidna 7.1, SoftBadger 6
 ```
+
+The git commit message/PR body should also contain an attribution like the following:
+
+```
+Assisted-by: <AI agent> using model(s) ModelA[, ModelB, ...]
+```
 {% if 'python_roles' in group_names %}
 
 ## Python Code

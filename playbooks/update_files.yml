@@ -363,7 +363,7 @@
           vars:
             manage_actions_phase: lockfile
 
-        - name: Create git commit, PR
+        - name: Stage files and list changes
           shell:
             chdir: "{{ git_dir }}"
             cmd: |
@@ -373,6 +373,20 @@
                   git add "$file"
               done
               git add README.md
+              echo "Files added for role {{ inventory_hostname }}:"
+              git diff --cached --name-only --no-renames --diff-filter=A
+              echo "Files updated for role {{ inventory_hostname }}:"
+              git diff --cached --name-only --no-renames --diff-filter=MT
+              echo "Files removed for role {{ inventory_hostname }}:"
+              git diff --cached --name-only --no-renames --diff-filter=D
+          register: file_changes
+          changed_when: false
+
+        - name: Create git commit, PR
+          shell:
+            chdir: "{{ git_dir }}"
+            cmd: |
+              set -euo pipefail
               if git diff --cached --quiet; then
                 # nothing to do
                 echo No updates for role {{ inventory_hostname }}
@@ -416,6 +430,10 @@
               fi
           register: create_pr
           changed_when: "'CHANGED' in create_pr.stdout"
+
+        - name: Print file changes for role
+          debug:
+            msg: "{{ file_changes.stdout_lines }}"
       always:
         - name: Clean up temp working dir
           file:
