@@ -1,0 +1,328 @@
+# AGENTS.md - AI Agent Instructions for the {{ inventory_hostname }} Linux System Role
+
+<!--
+This file is managed from https://github.com/linux-system-roles/.github,
+any manual edits will be overwritten.
+-->
+
+> **If you are an end user of this role** (you just want to *use* it in a
+> playbook, not change its code), stop here and read
+> [README.md](README.md) instead. Everything below is for people - and AI
+> agents - **developing or reviewing changes to this role's code**.
+
+## For end users
+
+See [README.md](README.md) for role variables, usage examples, and
+supported platforms. See
+[contributing.md](contributing.md) if you want to report a bug or request a
+feature without writing code yourself.
+
+## For developers (and AI coding agents)
+
+The instructions below are duplicated from this repository's
+`.coderabbit.yaml`, which CodeRabbit uses to automatically review pull
+requests. Follow them when writing or modifying code so that your changes
+pass review the first time. See
+[contribute.html](https://linux-system-roles.github.io/contribute.html) for
+the full contributor guide these conventions are based on.
+
+### Commit messages, PR titles, and PR descriptions
+
+**PR title** MUST follow Conventional Commits format:
+
+- Format: `<required type><optional (scope)><optional !>: <required description>`
+- Valid types: see
+  <https://github.com/linux-system-roles/auto-maintenance/blob/main/pr_title_lint.py#L23>
+- Examples:
+  - `feat: Add backup functionality`
+  - `fix: Correct OSTree package installation`
+  - `fix!: Remove deprecated variable (breaking change)`
+  - `chore(formatting): Fix indentation in my_module.py`
+  - `refactor(python)!: Use new python library thispy which has breaking api changes`
+
+**PR description** MUST follow the template in
+`.github/pull_request_template.md`:
+
+- Must contain "Enhancement:" or "Feature:" section describing what changed
+- Must contain "Reason:" section explaining why the change was needed
+- Must contain "Result:" section describing the outcome or impact
+- Can contain optional "Issue Tracker Tickets (Jira or BZ if any):" section
+- Must contain "Signed-off-by:" section with your name and email address -
+  use `git commit -s`
+- Can contain optional "Assisted-by:" section with name of the AI coding
+  assistant and models used
+
+Example:
+
+```text
+Feature: Introduce the {{ inventory_hostname }}_secure_logging variable
+
+Reason: Currently, all sensitive tasks use hard-coded no_log: true, which makes debugging difficult.
+
+Result: Users can now set {{ inventory_hostname }}_secure_logging: false for debugging while maintaining secure defaults.
+
+Issue Tracker Tickets (Jira or BZ if any): RHEL-12345
+
+Signed-off-by: John Doe john.doe@example.com
+
+Assisted-by: Fish 4.3 using model Swim 6.2
+```
+
+For bug fixes, use this template instead:
+
+- Must contain "Cause:" section explaining the root cause of the bug
+- Must contain "Consequences:" section explaining the impact of the bug and
+  how it appears to users
+- Must contain "Fix:" section explaining the fix for the bug and how it
+  fixes the bug
+- Must contain "Result:" section describing the outcome or impact of the fix
+- Can contain optional "Issue Tracker Tickets (Jira or BZ if any):" section
+- Must contain "Signed-off-by:" section with your name and email address -
+  use `git commit -s`
+- Can contain optional "Assisted-by:" section with name of the AI coding
+  assistant and models used
+
+Example:
+
+```text
+Cause: The variable rolename_user_name was being checked for a `none` value but was not being checked for string length greater than 0 if a string.
+
+Consequences: The role allowed empty user names to be configured which caused the daemon to report "User not found".
+
+Fix: The variable rolename_user_name is now checked for string length if not `none`, and will report an error in that case if the length is 0.
+
+Result: The role will not allow the user to provide an empty user name and will report an error if the rolename_user_name length is 0.
+
+Signed-off-by: John Doe john.doe@example.com
+
+Assisted-by: Fish 4.3 using model Swim 6.2
+```
+
+### Ansible tasks - `tasks/**/*.yml`
+
+**`no_log` patterns:**
+
+- For sensitive data (credentials, secrets, passwords, keys):
+
+  ```yaml
+  - name: Task with sensitive data
+    ansible.builtin.command: sensitive command
+    no_log: "{{ '{{' }} {{ inventory_hostname }}_secure_logging {{ '}}' }}"
+  ```
+
+  Ensure `{{ inventory_hostname }}_secure_logging: true` is defined in
+  `defaults/main.yml`.
+
+- For facts modules (`package_facts`, `service_facts`):
+
+  ```yaml
+  - name: Gather package facts
+    ansible.builtin.package_facts:
+    no_log: "{{ '{{' }} ansible_verbosity < 3 {{ '}}' }}"
+  ```
+
+  This hides verbose facts output unless running with `-vvv` or higher
+  verbosity.
+
+- NEVER use hardcoded `no_log: true` - always parametrize.
+
+**Package installation (OSTree compatibility):**
+
+- ALWAYS use the `ansible.builtin.package` module (NEVER `yum`, `dnf`, or
+  `apt` directly).
+- For Red Hat family systems: MUST include the `use:` parameter for OSTree
+  compatibility.
+- For other systems (`apt`, etc.): the OSTree `use:` parameter is NOT needed.
+
+Red Hat family pattern (rpm/dnf/yum based):
+
+```yaml
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ '{{' }} __{{ inventory_hostname }}_packages {{ '}}' }}"
+    state: present
+    use: "{{ '{{' }} (__{{ inventory_hostname }}_is_ostree | d(false)) | ternary('ansible.posix.rhel_rpm_ostree', omit) {{ '}}' }}"
+```
+
+Non-Red Hat systems (apt based) - no OSTree handling needed:
+
+```yaml
+- name: Install packages
+  ansible.builtin.package:
+    name: "{{ '{{' }} __{{ inventory_hostname }}_packages {{ '}}' }}"
+    state: present
+  when: ansible_facts["pkg_mgr"] == 'apt'
+```
+
+Pattern explanation:
+
+- `__{{ inventory_hostname }}_is_ostree` detects OSTree/rpm-ostree systems
+  (RHEL/CentOS/Fedora variants). This variable should already exist in
+  `vars/main.yml` - do NOT add it again.
+- `| d(false)` provides a safe default if the variable is undefined.
+- `ternary()` selects `ansible.posix.rhel_rpm_ostree` for OSTree, `omit`
+  otherwise.
+- `omit` removes the parameter entirely on non-OSTree Red Hat systems.
+
+**Third-party collections:**
+
+- Avoid third-party collections (`community.general`, `community.crypto`,
+  etc.).
+- Use `ansible.builtin` modules or the `command` module instead.
+
+**Referencing other system roles:**
+
+- Use the FQCN: `fedora.linux_system_roles.{{ inventory_hostname }}`.
+
+**Idempotency:**
+
+- Tasks must be idempotent - safe to run multiple times without unintended
+  changes.
+- Use proper state parameters (`present`/`absent`, `started`/`stopped`,
+  etc.).
+- `command`/`shell` tasks should use `creates`/`removes` or `changed_when` to
+  avoid false changes. Example:
+
+  ```yaml
+  - name: Initialize database
+    ansible.builtin.command: /usr/bin/initialize-db
+    args:
+      creates: /var/lib/db/initialized.flag
+  ```
+
+**Check mode support:**
+
+- Critical tasks should support check mode (`--check`).
+- Use `check_mode: false` only when absolutely necessary (e.g. fact
+  gathering).
+- Test that the role works with `--check --diff`.
+
+**Test coverage requirement:**
+
+- When adding new tasks to `tasks/main.yml` or creating new task files,
+  verify that corresponding test coverage exists in `tests/`.
+- New functionality MUST include test files (`tests/tests_*.yml`) that
+  exercise the new code paths.
+- Tests should verify both success scenarios and failure/edge cases.
+- If a change adds new tasks but does not include new or updated tests,
+  flag it and add test coverage before merging.
+
+### Handlers - `handlers/**/*.yml`
+
+- Handlers with sensitive data must use
+  `no_log: "{{ '{{' }} {{ inventory_hostname }}_secure_logging {{ '}}' }}"`.
+
+### Test playbooks - `tests/tests_*.yml`
+
+**CRITICAL: Role invocation pattern:**
+
+- NEVER use `ansible.builtin.include_role` directly.
+- NEVER use `ansible.builtin.import_role` directly.
+- NEVER use the `roles:` keyword.
+- ALWAYS use the centrally managed wrapper:
+
+  ```yaml
+  - name: Run role
+    ansible.builtin.include_tasks: tasks/run_role_with_clear_facts.yml
+    vars:
+      {{ inventory_hostname }}_<parameter>: <value>
+  ```
+
+**Test quality requirements:**
+
+- Tests should verify both success and failure scenarios.
+- Use the `assert` module to verify expected state after role execution.
+- Include cleanup tasks so tests are rerunnable.
+- Run tests in a block with an `always` section that runs cleanup, so
+  cleanup always runs.
+- Tag cleanup tasks with `tests::cleanup` so cleanup can be skipped for
+  debug purposes.
+- Tests should be idempotent - running twice should not cause failures.
+- Example verification:
+
+  ```yaml
+  - name: Verify service is running
+    ansible.builtin.assert:
+      that:
+        - ansible_facts.services['mssql-server.service'].state == 'running'
+      fail_msg: "SQL Server service is not running"
+  ```
+
+### Templates - `templates/**/*.j2`
+
+Required headers, in this order:
+
+1. `ansible_managed` header: `{{ '{{' }} ansible_managed | comment {{ '}}' }}`
+2. Role fingerprint:
+   `{{ '{{' }} "system_role:{{ inventory_hostname }}" | comment(prefix="", postfix="") {{ '}}' }}`
+
+### Variable definitions - `defaults/**/*.yml`
+
+- All variables MUST be prefixed with `{{ inventory_hostname }}_`.
+- All variables MUST be stored in `defaults/main.yml` - Ansible doesn't
+  include variables from other files in `defaults/`.
+- These are user-facing API variables.
+- For every new variable introduced here, verify that it is documented in
+  `README.md` with a description and a usage example. If it is missing from
+  `README.md`, flag it and add it.
+- If a variable is intended to have **no default value** (it should remain
+  undefined unless the user sets it), do NOT add it to `defaults/main.yml`
+  at all - only declare and document it in `meta/argument_specs.yml` (see
+  below). Adding it here with a placeholder/empty default defeats the
+  purpose of leaving it undefined.
+
+### Variable definitions - `vars/**/*.yml`
+
+- Internal variables MUST be prefixed with `__{{ inventory_hostname }}_`.
+- User-facing variables belong in `defaults/main.yml`, not here.
+
+### Role argument validation - `meta/argument_specs.yml`
+
+`argument_specs.yml` is the authoritative, user-facing documentation and
+type/shape validation for every role variable - keep it in sync whenever a
+variable is added, renamed, or changed.
+
+- **Document every user-facing variable** here: type, whether it's
+  required, its default (if any), `choices`, and a clear `description`.
+  Nested suboptions (dicts/lists of dicts) must be documented the same way,
+  recursively.
+- **Variables that should be undefined by default** (no sensible default
+  value exists, and the role/module should see them as unset unless the
+  user provides a value) must NOT be given a default in `defaults/main.yml`.
+  Declare them only in `argument_specs.yml` (without a `default:` key) so
+  Ansible's role-argument validation documents and type-checks them while
+  they remain genuinely undefined at runtime. Do not work around this by
+  adding a dummy/empty default in `defaults/main.yml` just to "define" the
+  variable.
+- `argument_specs.yml` validation is necessarily limited: it checks types
+  and shapes, but it cannot express cross-field constraints (e.g. "`a`
+  requires `b`"), can't fully validate polymorphic/`raw`-typed fields that
+  accept more than one type, and runs before any of the role's own facts
+  are gathered. When a variable needs validation beyond what
+  `argument_specs.yml` can express, add explicit checks as tasks in
+  `tasks/assert_role_vars.yml` (create the file if it doesn't exist yet,
+  and make sure it's run near the start of `tasks/main.yml`). Reach for
+  `tasks/assert_role_vars.yml` specifically when:
+  - A value depends on another variable's value (cross-field validation).
+  - A field accepts multiple shapes/types that `argument_specs.yml` can't
+    discriminate between (e.g. a `raw` type that may be a string or a
+    dict) - see `{{ inventory_hostname }}/tasks/assert_role_vars.yml`-style
+    roles such as the `network` role's `assert_connection_vars.yml` for a
+    real example.
+  - The constraint can only be evaluated against gathered facts or other
+    runtime state, not from the variable's value alone.
+  - Keep these checks minimal: let `argument_specs.yml` do all the
+    validation it is capable of, and only add `assert_role_vars.yml` checks
+    for what it genuinely cannot express.
+{% if 'python_roles' in group_names %}
+
+### Python code - `**/*.py`
+
+- Must follow PEP 8 and be formatted with Python Black.
+- Run `tox -e black,flake8` before committing.
+{% endif %}
+
+### Documentation - `README.md`
+
+- Document all new user-facing variables.
+- Include usage examples for new functionality.
