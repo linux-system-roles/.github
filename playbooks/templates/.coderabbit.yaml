@@ -32,15 +32,8 @@ reviews:
     unit_tests:
       enabled: false
 
-# PR title/description requirements, AI agent attribution, and all
-# path-specific coding instructions (tasks/**/*.yml, defaults/**/*.yml,
-# meta/argument_specs.yml, README.md, etc.) now live in AGENTS.md at the
-# repo root. CodeRabbit auto-discovers AGENTS.md and applies it as review
-# criteria without any further configuration here - see
+# Coding conventions, PR title/description requirements, AI attribution,
+# and path-specific instructions live in AGENTS.md at the repo root.
+# CodeRabbit auto-discovers AGENTS.md and applies it as review criteria:
 # https://docs.coderabbit.ai/knowledge-base/code-guidelines
-#
-# Note: unlike the old `pre_merge_checks`, this is advisory, not a hard
-# gate. The Conventional Commits PR title format is still independently
-# enforced by the .github/workflows/pr-title-lint.yml action in every role
-# repo; there is currently no independent enforcement of the PR
-# description format or AI-attribution comment described in AGENTS.md.
+
