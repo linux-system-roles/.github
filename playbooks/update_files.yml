@@ -126,18 +126,28 @@
             __absent_shellcheck_files: "{{ absent_shellcheck_files
               if 'shellcheck_roles' in group_names
               else [] }}"
+            __present_arg_specs_docs_files: "{{ present_arg_specs_docs_files
+              if 'arg_specs_docs' in group_names
+              else [] }}"
+            __present_arg_specs_docs_templates: "{{ present_arg_specs_docs_templates
+              if 'arg_specs_docs' in group_names
+              else [] }}"
+            __absent_arg_specs_docs_files: "{{ absent_arg_specs_docs_files
+              if 'arg_specs_docs' in group_names
+              else [] }}"
             __role_present_templates: "{{ role_present_templates | d([]) }}"
             __role_template_dir: role_templates/{{ inventory_hostname }}/
 
         - name: Set more vars
           set_fact:
-            __all_present: "{{ present_files + __present_python_files +
-              __present_shellcheck_files +
+            __all_present: "{{ (present_files + __present_python_files +
+              __present_shellcheck_files + __present_arg_specs_docs_files +
               present_templates + __present_python_templates +
-              __present_shellcheck_templates +
-              __role_present_templates }}"
+              __present_shellcheck_templates + __present_arg_specs_docs_templates +
+              __role_present_templates)
+              | difference(__absent_arg_specs_docs_files) }}"
             __all_absent: "{{ absent_files + __absent_python_files +
-              __absent_shellcheck_files }}"
+              __absent_shellcheck_files + __absent_arg_specs_docs_files }}"
 
         # NOTE: If we add support for per-role or per-group overrides:
         #  if the role/group does not want to install a file that is
@@ -172,8 +182,9 @@
             src: "{{ item }}"
             dest: "{{ git_dir }}/{{ item }}"
             mode: preserve
-          loop: "{{ present_files + __present_python_files +
-            __present_shellcheck_files }}"
+          loop: "{{ (present_files + __present_python_files +
+            __present_shellcheck_files + __present_arg_specs_docs_files)
+            | difference(__absent_arg_specs_docs_files) }}"
           changed_when: false
 
         # NOTE: Some of the templates are github action definitions
@@ -189,8 +200,10 @@
             src: "{{ item.0 ~ item.1 }}"
             dest: "{{ git_dir }}/{{ item.1 }}"
             mode: "0644"
-          loop: "{{ ([''] | product(present_templates +
-            __present_python_templates + __present_shellcheck_templates)) +
+          loop: "{{ ([''] | product((present_templates +
+            __present_python_templates + __present_shellcheck_templates +
+            __present_arg_specs_docs_templates)
+            | difference(__absent_arg_specs_docs_files))) +
             ([__role_template_dir] | product(__role_present_templates)) }}"
           changed_when: false
 
@@ -220,6 +233,11 @@
               {% endfor %}"
           vars:
             basenames: "{{ find.files | map(attribute='path') | map('basename') | sort | list }}"
+          # Roles that build docs from argument_specs have a generated README
+          # (no CI badges - the per-check workflows are workflow_call-only and
+          # cannot carry a meaningful badge), so the automation must not inject
+          # a badge line, which would also break the check-docs regenerate+diff.
+          when: "'arg_specs_docs' not in group_names"
           changed_when: false
 
         - name: Manage ansible-test ignore files

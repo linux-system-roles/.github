@@ -190,3 +190,6 @@ all:
     test_roles:
       hosts:
         ci_testing:
+    arg_specs_docs:
+      hosts:
+        bootloader:

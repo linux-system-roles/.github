@@ -63,7 +63,7 @@ jobs:
           | Command | Check name | Description |
           | --- | --- | --- |
           | `/citest all` | All checks listed below | Run every CI test available for this role |
-          | `/citest linters` | Lint and lightweight checks | Run ansible-lint, ansible-test, ansible-managed-var-comment, codespell, markdownlint, pr-title-lint, test_converting_readme, and codeql, python-unit-test, and shellcheck when those workflows exist |
+          | `/citest linters` | Lint and lightweight checks | Run ansible-lint, ansible-test, ansible-managed-var-comment, codespell, markdownlint, pr-title-lint, {% if 'arg_specs_docs' in group_names %}check-docs-updated{% else %}test_converting_readme{% endif %}, and codeql, python-unit-test, and shellcheck when those workflows exist |
           | `/citest integration` | QEMU/container and Testing Farm checks | Run qemu-kvm-integration-tests and tft |
           | `/citest ansible-lint` | `Ansible Lint / ansible_lint (<ansible-lint>, <ansible>, <python>) (pull_request)` | Lint Ansible content after converting the role to collection format |
           | `/citest ansible-managed-var-comment` | `Check for ansible_managed variable use in comments / ansible_managed_var_comment (pull_request)` | Fail if `ansible_managed` is used in comments |
@@ -72,7 +72,12 @@ jobs:
           | `/citest markdownlint` | `Markdown Lint / markdownlint (pull_request)` | Lint Markdown files |
           | `/citest pr-title-lint` | `PR Title Lint / commit-checks` | Check that the pull request title follows the required format |
           | `/citest qemu-kvm-integration-tests` | `Test / scenario (<image>, <env>) (pull_request)` | Run role integration tests in QEMU VMs and containers |
+{% if 'arg_specs_docs' not in group_names %}
           | `/citest test_converting_readme` | `Test converting README.md to README.html / test_converting_readme (pull_request)` | Convert README.md to HTML |
+{% endif %}
+{% if 'arg_specs_docs' in group_names %}
+          | `/citest check-docs-updated` | `Check that README files are updated when specs change / check_docs (pull_request)` | Rebuild README.md and README.html from argument_specs and fail if they are out of date |
+{% endif %}
           | `/citest tft` | `<platform>\|ansible-<version>` | Run integration tests in Testing Farm |
           | `/citest woke` | `Woke / Detect non-inclusive language (pull_request)` | Detect non-inclusive language |
 {% if 'python_roles' in group_names %}

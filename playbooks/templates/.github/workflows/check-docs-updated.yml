@@ -1,0 +1,102 @@
+---
+# yamllint disable rule:line-length
+name: Check that README files are updated when specs change
+on:  # yamllint disable-line rule:truthy
+  workflow_call:
+    inputs:
+      requested:
+        description: Run this workflow for an authorized /citest command
+        required: true
+        type: boolean
+permissions:
+  contents: read
+  pull-requests: read
+  # This is required for the ability to create/update the Pull request status
+  statuses: write
+jobs:
+  check_docs:
+    if: inputs.requested || github.event_name != 'issue_comment'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Get PR head SHA and context
+        if: github.event_name == 'issue_comment'
+        id: head_sha_context
+        env:
+{%- raw %}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          REPO: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.issue.number }}
+          CONTEXT: "${{ github.workflow }} / ${{ github.job }} (pull_request)"
+{%- endraw +%}
+        run: |
+          set -euxo pipefail
+          head_sha=$(gh api "repos/$REPO/pulls/$PR_NUMBER" --jq '.head.sha')
+          echo "head_sha=$head_sha" >> "$GITHUB_OUTPUT"
+          echo "context=$CONTEXT" >> "$GITHUB_OUTPUT"
+
+      - name: Set commit status as pending
+        if: github.event_name == 'issue_comment'
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
+        with:
+          sha: ${{ steps.head_sha_context.outputs.head_sha }}
+          status: pending
+          context: ${{ steps.head_sha_context.outputs.context }}
+          description: Test started
+          targetUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.check_run_id }}
+{%- endraw +%}
+
+      - name: Update pip, git
+        run: |
+          set -euxo pipefail
+          sudo apt update
+          sudo apt install -y git
+
+      - name: Check out code
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1  # v7.0.1
+        with:
+          persist-credentials: false
+{%- raw %}
+          ref: ${{ steps.head_sha_context.outputs.head_sha || github.sha }}
+{%- endraw +%}
+
+      - name: Set up Python
+        uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
+        with:
+          python-version: '3.11'
+
+      - name: Install tox and tox-lsr
+        run: |
+          set -euxo pipefail
+          pip install tox
+          pip install git+https://github.com/linux-system-roles/tox-lsr@main
+
+      - name: Build documentation from argument_specs
+        run: tox -e build-docs
+
+      - name: Check whether README files are up to date
+        run: |
+          set -euo pipefail
+          if git diff --exit-code README.md README.html; then
+            echo "README files are up-to-date"
+          else
+            echo "README files are out-of-date"
+            echo "meta/argument_specs.yml or meta/extra_specs.yml was modified,"
+            echo "but README.md and/or README.html were not regenerated."
+            echo "Run 'tox -e build-docs' locally and commit the changes."
+            echo "For instructions on how to install tox-lsr, see:"
+            echo "  https://github.com/linux-system-roles/tox-lsr"
+            exit 1
+          fi
+
+      - name: Set final commit status
+        if: always() && github.event_name == 'issue_comment' && steps.head_sha_context.outputs.head_sha != ''
+        uses: {{ gh_action_prefix }}/commit-status@{{ gh_action_gitref }}
+{%- raw %}
+        with:
+          sha: ${{ steps.head_sha_context.outputs.head_sha }}
+          status: ${{ job.status }}
+          context: ${{ steps.head_sha_context.outputs.context }}
+          description: Test finished
+          targetUrl: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}/job/${{ job.check_run_id }}
+{%- endraw +%}
