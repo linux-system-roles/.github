@@ -72,7 +72,7 @@ lsr_name: linux_system_roles
 lsr_role_namespace: linux_system_roles  # for ansible-lint
 gh_action_prefix: linux-system-roles/.github/github-actions
 gh_action_gitref: main
-tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@bfd11b23a1ed56388ea7ab8263d30e3172553a7c"  # 3.21.0
+tox_lsr_url: "git+https://github.com/linux-system-roles/tox-lsr@b8adb1a54303ce668b39fedf86e89cd0895df948"
 # These are the supported RHEL-alike distros - note that at the time of writing,
 # OracleLinux has some problems with some roles, so we don't include it here
 # Roles that do support OracleLinux can list it in lsr_rh_distros_extra
