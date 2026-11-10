@@ -62,14 +62,12 @@ jobs:
 
       - name: Set up Python
         uses: actions/setup-python@6d4fd22b20465ccc0f7354476588e8df7c9ca0e0  # v7.1.0
-        with:
-          python-version: '3.11'
 
       - name: Install tox and tox-lsr
         run: |
           set -euxo pipefail
           pip install tox
-          pip install git+https://github.com/linux-system-roles/tox-lsr@main
+          pip install git+https://github.com/linux-system-roles/tox-lsr@b8adb1a54303ce668b39fedf86e89cd0895df948
 
       - name: Build documentation from argument_specs
         run: tox -e build-docs
@@ -77,6 +75,14 @@ jobs:
       - name: Check whether README files are up to date
         run: |
           set -euo pipefail
+          # Fail if the generated docs are not tracked - otherwise an untracked
+          # README.html would not show up in the diff and the check would
+          # silently pass while the committed docs are missing or stale.
+          if ! git ls-files --error-unmatch README.md README.html >/dev/null 2>&1; then
+            echo "README.md and/or README.html is not tracked in git"
+            echo "Run 'tox -e build-docs' locally and commit both files."
+            exit 1
+          fi
           if git diff --exit-code README.md README.html; then
             echo "README files are up-to-date"
           else
