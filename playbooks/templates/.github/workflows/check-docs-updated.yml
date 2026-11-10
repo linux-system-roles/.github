@@ -17,6 +17,10 @@ jobs:
   check_docs:
     if: inputs.requested || github.event_name != 'issue_comment'
     runs-on: ubuntu-latest
+    permissions:
+      pull-requests: read
+      contents: read
+      statuses: write
     steps:
       - name: Get PR head SHA and context
         if: github.event_name == 'issue_comment'

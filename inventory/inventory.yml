@@ -193,3 +193,4 @@ all:
     arg_specs_docs:
       hosts:
         bootloader:
+        ci_testing:
