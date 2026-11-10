@@ -440,3 +440,43 @@
             path: "{{ __working_dir.path }}"
             state: absent
           when: test_dir is not defined
+
+        - name: Print file changes table
+          debug:
+            msg: >-
+              {%- set changes = namespace(files={}) -%}
+              {%- for role in ansible_play_hosts_all -%}
+              {%- if hostvars[role].file_changes is defined -%}
+              {%- for file in hostvars[role].file_changes.stdout_lines | default([])
+                | reject('match', '^Files (added|updated|removed) for role ') -%}
+              {%- set _ = changes.files.update({file: changes.files.get(file, []) + [role]}) -%}
+              {%- endfor -%}
+              {%- endif -%}
+              {%- endfor -%}
+              {%- set table = namespace(lines=[]) -%}
+              {%- if changes.files | length == 0 -%}
+              {%- set _ = table.lines.append('No files changed.') -%}
+              {%- else -%}
+              {%- set width = ([4] + (changes.files.keys() | map('length') | list)) | max -%}
+              {%- set _ = table.lines.append('FILE'.ljust(width) ~ '  ROLES') -%}
+              {%- set _ = table.lines.append('-' * width ~ '  ' ~ '-' * 5) -%}
+              {%- set python_roles = groups.get('python_roles', []) -%}
+              {%- for file, roles in changes.files | dictsort -%}
+              {%- set missing = ansible_play_hosts_all | difference(roles) | sort -%}
+              {%- if missing | length == 0 -%}
+              {%- set role_text = 'ALL ROLES' -%}
+              {%- elif python_roles | length > 0 and
+                python_roles | difference(roles) | length == 0 -%}
+              {%- set other_roles = roles | difference(python_roles) | sort -%}
+              {%- set role_text = 'ALL PYTHON ROLES' ~
+                (', ' ~ (other_roles | join(', ')) if other_roles else '') -%}
+              {%- elif missing | length < 5 -%}
+              {%- set role_text = 'NOT ' ~ (missing | join(', ')) -%}
+              {%- else -%}
+              {%- set role_text = roles | sort | join(', ') -%}
+              {%- endif -%}
+              {%- set _ = table.lines.append(file.ljust(width) ~ '  ' ~ role_text) -%}
+              {%- endfor -%}
+              {%- endif -%}
+              {{- table.lines -}}
+          when: inventory_hostname == ansible_play_hosts_all[-1]
