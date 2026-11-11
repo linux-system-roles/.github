@@ -74,8 +74,7 @@ jobs:
           | `/citest qemu-kvm-integration-tests` | `Test / scenario (<image>, <env>) (pull_request)` | Run role integration tests in QEMU VMs and containers |
 {% if 'arg_specs_docs' not in group_names %}
           | `/citest test_converting_readme` | `Test converting README.md to README.html / test_converting_readme (pull_request)` | Convert README.md to HTML |
-{% endif %}
-{% if 'arg_specs_docs' in group_names %}
+{% else %}
           | `/citest check-docs-updated` | `Run CI tests / check_docs (pull_request)` | Rebuild README.md and README.html from argument_specs and fail if they are out of date |
 {% endif %}
           | `/citest tft` | `<platform>\|ansible-<version>` | Run integration tests in Testing Farm |
