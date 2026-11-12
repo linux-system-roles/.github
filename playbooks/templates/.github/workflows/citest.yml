@@ -54,7 +54,11 @@ jobs:
             markdownlint
             pr-title-lint
             qemu-kvm-integration-tests
+{% if 'arg_specs_docs' not in group_names %}
             test_converting_readme
+{% else %}
+            check-docs-updated
+{% endif %}
             tft
             woke
 {% if 'python_roles' in group_names %}
@@ -73,7 +77,11 @@ jobs:
             codespell
             markdownlint
             pr-title-lint
+{% if 'arg_specs_docs' not in group_names %}
             test_converting_readme
+{% else %}
+            check-docs-updated
+{% endif %}
 {% if 'python_roles' in group_names %}
             codeql
             python-unit-test
@@ -193,12 +201,21 @@ jobs:
     with:
       requested: true
 
+{% if 'arg_specs_docs' not in group_names %}
   test_converting_readme:
     needs: parse
     if: contains(fromJSON(needs.parse.outputs.selected), 'test_converting_readme')
     uses: ./.github/workflows/test_converting_readme.yml
     with:
       requested: true
+{% else %}
+  check_docs_updated:
+    needs: parse
+    if: contains(fromJSON(needs.parse.outputs.selected), 'check-docs-updated')
+    uses: ./.github/workflows/check-docs-updated.yml
+    with:
+      requested: true
+{% endif %}
 
   tft:
     needs: parse

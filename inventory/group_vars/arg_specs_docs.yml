@@ -1,0 +1,11 @@
+present_arg_specs_docs_files: []
+present_arg_specs_docs_templates:
+  - .github/workflows/check-docs-updated.yml
+# Files that are installed for all active_roles but are not wanted for roles that
+# build docs from argument_specs: the old pandoc README->HTML workflow and its
+# template. These are removed from the role and subtracted from the present lists
+# so the active_roles defaults do not re-add them.
+absent_arg_specs_docs_files:
+  - .github/workflows/build_docs.yml
+  - .github/workflows/test_converting_readme.yml
+  - .pandoc_template.html5
