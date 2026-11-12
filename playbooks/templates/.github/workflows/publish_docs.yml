@@ -18,6 +18,10 @@ on:  # yamllint disable-line rule:truthy
       - README.html
 permissions:
   contents: read
+# Serialize publication so two quick pushes cannot race
+concurrency:
+  group: publish-docs
+  cancel-in-progress: true
 jobs:
   publish_docs:
     runs-on: ubuntu-latest
