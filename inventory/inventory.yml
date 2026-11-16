@@ -194,3 +194,4 @@ all:
       hosts:
         bootloader:
         ci_testing:
+        template:
