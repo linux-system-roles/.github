@@ -154,7 +154,7 @@ Explanation:
 - ALWAYS use the `cmd` parameter to specify the script to run, never the free-form style.
 - ALMOST ALWAYS use `executable: /bin/bash` unless you must use another shell.
 - ALWAYS use `set -e`, `set -u`, and `set -o pipefail` (or combined as `set -euo pipefail`) as the first line of the script.
-- Ansible requires this.
+- Ansible requires pipefail.
 - ALWAYS use `changed_when:`.
 - If you need to detect whether the script changed something, have it exit with a specific code or print a value to stdout/stderr, `register:` the result, then use `changed_when:` and `failed_when:` conditionals.
 
